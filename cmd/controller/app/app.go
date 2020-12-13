@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bind-dns/binddns-operator/pkg/controller"
+	"github.com/bind-dns/binddns-operator/pkg/kube"
+	"github.com/bind-dns/binddns-operator/pkg/signals"
 	"github.com/bind-dns/binddns-operator/pkg/utils"
 	zlog "github.com/bind-dns/binddns-operator/pkg/utils/zaplog"
 	"github.com/bind-dns/binddns-operator/version"
@@ -27,12 +29,26 @@ func NewCommand() *cobra.Command {
 			// Init log formatter
 			zlog.InitLog(logFile, logMaxSize, logMaxBackups, logMaxAge, logCompress)
 
-			c, err := controller.NewController()
+			// Init kubernetes client
+			err := kube.InitKubernetesClient()
 			if err != nil {
 				zlog.Error(err)
 				return
 			}
-			if err = c.Run(); err != nil {
+
+			o, err := controller.NewDnsController()
+			if err != nil {
+				zlog.Error(err)
+				return
+			}
+
+			// Handle shutdown signals.
+			stopCh := signals.SetupSignalHandler()
+
+			// Start informer
+			o.DnsInformerFactory.Start(stopCh)
+
+			if err = o.Run(); err != nil {
 				zlog.Panic(err)
 			}
 		},

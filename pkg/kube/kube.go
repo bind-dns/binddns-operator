@@ -3,6 +3,8 @@ package kube
 import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	dnsclientset "github.com/bind-dns/binddns-operator/pkg/generated/clientset/versioned"
 )
 
 var (
@@ -11,28 +13,38 @@ var (
 
 type KubeClient struct {
 	restConfig *rest.Config
-	clientSet  kubernetes.Interface
+
+	clientSet       kubernetes.Interface
+	dnsClientSet dnsclientset.Interface
 }
 
-// GetKubeClient get the singleton object.
-func GetKubeClient() (client *KubeClient, err error) {
-	if globalKubeClient != nil {
-		return globalKubeClient, nil
-	}
-
+func InitKubernetesClient() error {
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
-		return nil, err
+		return err
 	}
+	// k8s standard clientset
 	clientSet, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
-		return nil, err
+		return err
 	}
+
+	// crd clientset
+	dnsClientSet, err := dnsclientset.NewForConfig(restConfig)
+	if err != nil {
+		return err
+	}
+
 	globalKubeClient = &KubeClient{
-		restConfig: restConfig,
-		clientSet:  clientSet,
+		restConfig:      restConfig,
+		clientSet:       clientSet,
+		dnsClientSet: dnsClientSet,
 	}
-	return globalKubeClient, nil
+	return nil
+}
+
+func GetKubeClient() *KubeClient {
+	return globalKubeClient
 }
 
 func (client *KubeClient) GetRestConfig() *rest.Config {
@@ -41,4 +53,8 @@ func (client *KubeClient) GetRestConfig() *rest.Config {
 
 func (client *KubeClient) GetClientSet() kubernetes.Interface {
 	return client.clientSet
+}
+
+func (client *KubeClient) GetDnsClientSet() dnsclientset.Interface {
+	return client.dnsClientSet
 }

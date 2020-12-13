@@ -8,7 +8,9 @@ require (
 	go.uber.org/zap v1.10.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	k8s.io/api v0.19.0
+	k8s.io/apimachinery v0.19.0
 	k8s.io/client-go v0.19.0
+	k8s.io/code-generator v0.20.0
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920 // indirect
 )
