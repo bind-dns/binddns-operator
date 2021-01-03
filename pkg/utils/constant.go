@@ -14,4 +14,11 @@ const (
 	DefaultLogMaxAge = 30
 	// DefaultLogCompress define whether the log need compress.
 	DefaultLogCompress = true
+
+	// DefaultWorkThread used to define the num of update dns-rules threads num.
+	DefaultWorkThreads = 4
+
+	DefaultRootDomain = "binddns.com"
+
+	DefaultEnableHttpApi = true
 )

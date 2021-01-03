@@ -5,6 +5,8 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type DnsDomain struct {
 	metav1.TypeMeta `json:",inline"`
 	// Standard object metadata.
@@ -14,7 +16,7 @@ type DnsDomain struct {
 	Spec DnsDomainSpec `json:"spec,omitempty"`
 
 	// Most recently observed status of the DnsInstance.
-	Status DnsDomainStatus `json:"status"`
+	Status DnsDomainStatus `json:"status,omitempty"`
 }
 
 type DnsDomainSpec struct {
@@ -58,10 +60,11 @@ type DnsDomainList struct {
 	Items []DnsDomain `json:"items"`
 }
 
-
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type DnsRule struct {
 	metav1.TypeMeta `json:",inline"`
 	// Standard object metadata.
@@ -71,18 +74,17 @@ type DnsRule struct {
 	Spec DnsRuleSpec `json:"spec"`
 
 	// Most recently observed status of the DnsInstance.
-	Status DnsRuleStatus `json:"status"`
+	Status DnsRuleStatus `json:"status,omitempty"`
 }
 
 type DnsRuleSpec struct {
-	DomainName  string  `json:"domainName,omitempty"`
-	Enabled     bool    `json:"enabled"`
-	Zone        string  `json:"zone,omitempty"`
-	Host        string  `json:"host,omitempty"`
-	Type        DnsType `json:"type,omitempty"`
-	Data        string  `json:"data,omitempty"`
-	Ttl         int32   `json:"ttl,omitempty"`
-	MaxPriority int32   `json:"maxPriority"`
+	Zone       string  `json:"zone,omitempty"`
+	Enabled    bool    `json:"enabled"`
+	Host       string  `json:"host,omitempty"`
+	Type       DnsType `json:"type,omitempty"`
+	Data       string  `json:"data,omitempty"`
+	Ttl        int32   `json:"ttl,omitempty"`
+	MxPriority int32   `json:"maxPriority"`
 }
 
 type DnsType string
@@ -97,16 +99,9 @@ const (
 )
 
 type DnsRuleStatus struct {
-	Status DnsRuleConditionStatus `json:"status"`
+	CreateTime string `json:"createTime"`
+	UpdateTime string `json:"updateTime"`
 }
-
-type DnsRuleConditionStatus string
-
-const (
-	RuleAvailable   DnsRuleConditionStatus = "Available"
-	RuleProgressing DnsRuleConditionStatus = "Progressing"
-	RuleFailure     DnsRuleConditionStatus = "Failure"
-)
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 

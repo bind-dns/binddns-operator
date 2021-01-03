@@ -14,7 +14,7 @@ var (
 type KubeClient struct {
 	restConfig *rest.Config
 
-	clientSet       kubernetes.Interface
+	clientSet    kubernetes.Interface
 	dnsClientSet dnsclientset.Interface
 }
 
@@ -36,8 +36,8 @@ func InitKubernetesClient() error {
 	}
 
 	globalKubeClient = &KubeClient{
-		restConfig:      restConfig,
-		clientSet:       clientSet,
+		restConfig:   restConfig,
+		clientSet:    clientSet,
 		dnsClientSet: dnsClientSet,
 	}
 	return nil

@@ -1,0 +1,72 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: binddns-controller
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: binddns-controller
+  template:
+    metadata:
+      labels:
+        app: binddns-controller
+    spec:
+      hostNetwork: true
+      serviceAccountName: binddns-sa
+      restartPolicy: Always
+      volumes:
+        - name: rndc-conf
+          configMap:
+            name: rndc-conf
+        - name: bind-conf
+          configMap:
+            name: bind-conf
+        - name: acl-dir
+          emptyDir: {}
+        - name: view-dir
+          emptyDir: {}
+        - name: zone-dir
+          emptyDir: {}
+      initContainers:
+        - name: init-config
+          image: binddns-operator:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/app/binddns-operator"]
+          args: ["init-config"]
+          volumeMounts:
+            - name: acl-dir
+              mountPath: /etc/named/acl
+            - name: zone-dir
+              mountPath: /etc/named/zone
+            - name: view-dir
+              mountPath: /etc/named/view
+      containers:
+        - name: binddns-controller
+          image: binddns-operator:latest
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: rndc-conf
+              mountPath: /etc/named/rndc.conf
+              subPath: rndc.conf
+            - name: acl-dir
+              mountPath: /etc/named/acl
+            - name: zone-dir
+              mountPath: /etc/named/zone
+            - name: view-dir
+              mountPath: /etc/named/view
+        - name: docker-bind
+          image: pelin/docker-bind:9.12.2
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: bind-conf
+              mountPath: /etc/named/named.conf
+              subPath: named.conf
+            - name: acl-dir
+              mountPath: /etc/named/acl
+            - name: zone-dir
+              mountPath: /etc/named/zone
+            - name: view-dir
+              mountPath: /etc/named/view

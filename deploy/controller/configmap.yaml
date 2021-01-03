@@ -1,0 +1,98 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rndc-conf
+  namespace: default
+data:
+  rndc.conf: |
+    # Start of rndc.conf
+    key "rndc-key" {
+    	algorithm hmac-sha256;
+    	secret "Mu6738V/PA79eCoTA+lP5yCRqdh/7W4zBGhCbmXZxSU=";
+    };
+
+    options {
+    	default-key "rndc-key";
+    	default-server 127.0.0.1;
+    	default-port 953;
+    };
+    # End of rndc.conf
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bind-conf
+  namespace: default
+data:
+  named.conf: |
+    options {
+        directory           	"/etc/named/";
+        # Close recursion
+        recursion               no;
+        # Close fetch-glue
+        fetch-glue              no;
+        # Hide version
+        version                 "Unknown";
+        listen-on port 53   	{ any; };
+        max-recursion-queries 	200;
+        dump-file       	"/etc/named/data/cache_dump.db";
+        statistics-file 	"/etc/named/data/named_stats.txt";
+        allow-query     	{ any; };
+        blackhole       	{ none; };
+    };
+
+    #rndc
+    key "rndc-key" {
+        algorithm hmac-sha256;
+        secret "Mu6738V/PA79eCoTA+lP5yCRqdh/7W4zBGhCbmXZxSU=";
+    };
+
+    controls {
+    	inet 127.0.0.1 port 953
+    		allow { 127.0.0.1; } keys { "rndc-key"; };
+    };
+
+    #statistics
+
+    #logging
+    logging {
+        channel default_log {
+            file "/var/log/bind/named.log" versions 10 size 200m;
+            severity dynamic;
+            print-category yes;
+            print-severity yes;
+            print-time yes;
+        };
+        channel query_log {
+            file "/var/log/bind/query.log" versions 10 size 20g;
+            severity dynamic;
+            print-category yes;
+            print-severity yes;
+            print-time yes;
+        };
+        channel error_query_log {
+            file "/var/log/bind/error_query.log" versions 1 size 500m;
+            severity dynamic;
+            print-category yes;
+            print-severity yes;
+            print-time yes;
+        };
+        channel resolver_log {
+            file "/var/log/bind/resolver.log" versions 10 size 200m;
+            severity dynamic;
+            print-category yes;
+            print-severity yes;
+            print-time yes;
+        };
+        category default {default_log;};
+        category queries {query_log;};
+        category query-errors {error_query_log;};
+        category resolver {resolver_log;};
+        category lame-servers {null;};
+        category edns-disabled {null;};
+    };
+
+    include "/etc/named/acl/acl.conf";
+    include "/etc/named/view/view.conf";
