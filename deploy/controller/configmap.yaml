@@ -43,18 +43,7 @@ data:
         blackhole       	{ none; };
     };
 
-    #rndc
-    key "rndc-key" {
-        algorithm hmac-sha256;
-        secret "Mu6738V/PA79eCoTA+lP5yCRqdh/7W4zBGhCbmXZxSU=";
-    };
-
-    controls {
-    	inet 127.0.0.1 port 953
-    		allow { 127.0.0.1; } keys { "rndc-key"; };
-    };
-
-    #statistics
+    includ "/etc/named/rndc.conf";
 
     #logging
     logging {

@@ -5,16 +5,16 @@ const (
 	ZoneTemplate = `
 $TTL    60
 $ORIGIN %s.
-@       86400   SOA   ns1.%s. admin.%s.(
+@       86400   SOA   ns1.binddns.com. admin.binddns.com.(
                       %d                ; Serial
                       3600              ; Refresh period
                       3600              ; Retry period
                       86400             ; Expire period
                       3600 )            ; Minimum TTL
 
-@       86400     NS     ns1.%s.
-@       86400     NS     ns2.%s.
-@       86400     NS     ns3.%s.
+@       86400     NS     ns1.binddns.com.
+@       86400     NS     ns2.binddns.com.
+@       86400     NS     ns3.binddns.com.
 
 ; Hosts
 %s

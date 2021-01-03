@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -71,7 +72,7 @@ func NewCommand() *cobra.Command {
 				return
 			}
 
-			if err := bind.NewDnsHandler().InitConfig(); err != nil {
+			if err := bind.NewDnsHandler().InitConfig(context.Background()); err != nil {
 				panic(err)
 			}
 		},
