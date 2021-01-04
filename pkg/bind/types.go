@@ -23,7 +23,7 @@ $ORIGIN %s.
 	// ViewTemplate defines the view template
 	ViewTemplate = `
 view "%s" {
-        match-clients {%s; %s; };
+        match-clients { %s; };
         allow-query-cache       { none; };
         allow-transfer          { none; };
         allow-recursion         { none; };
@@ -33,6 +33,9 @@ view "%s" {
 
 	// defaultDnsConfDir
 	defaultDnsConfDir = "/etc/named"
+
+	// defaultView
+	defaultView = "default"
 )
 
 var (

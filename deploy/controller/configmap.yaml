@@ -9,7 +9,7 @@ data:
     # Start of rndc.conf
     key "rndc-key" {
     	algorithm hmac-sha256;
-    	secret "Mu6738V/PA79eCoTA+lP5yCRqdh/7W4zBGhCbmXZxSU=";
+    	secret "4Aru+ALqE+mHi9N6SEePKAr6lkVdNjljQGQAs+ttyTI=";
     };
 
     options {
@@ -43,7 +43,16 @@ data:
         blackhole       	{ none; };
     };
 
-    includ "/etc/named/rndc.conf";
+    #rndc
+    key "rndc-key" {
+    	algorithm hmac-sha256;
+    	secret "4Aru+ALqE+mHi9N6SEePKAr6lkVdNjljQGQAs+ttyTI=";
+    };
+
+    controls {
+    	inet 127.0.0.1 port 953
+    		allow { 127.0.0.1; } keys { "rndc-key"; };
+    };
 
     #logging
     logging {
@@ -83,5 +92,5 @@ data:
         category edns-disabled {null;};
     };
 
-    include "/etc/named/acl/acl.conf";
+    # include "/etc/named/acl/acl.conf";
     include "/etc/named/view/view.conf";

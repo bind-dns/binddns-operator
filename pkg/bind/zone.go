@@ -15,6 +15,31 @@ import (
 	zlog "github.com/bind-dns/binddns-operator/pkg/utils/zaplog"
 )
 
+// initAllZones used to init the bind9 zone config
+func (handler *DnsHandler) initAllZones(ctx context.Context) (err error) {
+	zlog.Infof("Start to init all zones >>>>>>")
+	defer func() {
+		if err == nil {
+			zlog.Infof("Zones init successfully.")
+		}
+	}()
+
+	domains, err := kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsDomains("").List(ctx, v1.ListOptions{
+		ResourceVersion: "0",
+	})
+	if err != nil {
+		zlog.Error(err)
+		return err
+	}
+	for i := range domains.Items {
+		err = handler.initZone(ctx, domains.Items[i].Name)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // ZoneAdd used to add a zone.
 func (handler *DnsHandler) ZoneAdd(zone string) error {
 	if err := handler.initZone(context.Background(), zone); err != nil {
@@ -22,9 +47,8 @@ func (handler *DnsHandler) ZoneAdd(zone string) error {
 	}
 
 	// There is only one default view.
-	view := "default"
-	if err := exec.Command("/etc/named/rndc", "addzone", zone, "IN", view,
-		fmt.Sprintf("{ type master; file \"%s\";};", handler.getZoneFile(zone, view))).Run(); err != nil {
+	if err := exec.Command("/etc/named/rndc", "addzone", zone, "IN", defaultView,
+		fmt.Sprintf("{ type master; file \"%s\";};", handler.getZoneFilePath(zone, defaultView))).Run(); err != nil {
 		zlog.Error(err)
 		return err
 	}
@@ -38,18 +62,17 @@ func (handler *DnsHandler) ZoneUpdate(zone string) error {
 	}
 
 	// There is only one default view.
-	view := "default"
-	cmd := exec.Command("/etc/named/rndc", "freeze", zone, "IN", view)
+	cmd := exec.Command("/etc/named/rndc", "freeze", zone, "IN", defaultView)
 	if err := cmd.Run(); err != nil {
 		zlog.Error(cmd)
 		return err
 	}
-	cmd = exec.Command("/etc/named/rndc", "reload", zone, "IN", view)
+	cmd = exec.Command("/etc/named/rndc", "reload", zone, "IN", defaultView)
 	if err := cmd.Run(); err != nil {
 		zlog.Error(cmd)
 		return err
 	}
-	cmd = exec.Command("/etc/named/rndc", "thaw", zone, "IN", view)
+	cmd = exec.Command("/etc/named/rndc", "thaw", zone, "IN", defaultView)
 	if err := cmd.Run(); err != nil {
 		zlog.Error(cmd)
 		return err
@@ -62,6 +85,7 @@ func (handler *DnsHandler) ZoneDelete(zone string) error {
 	return nil
 }
 
+// initZone will init a single zone config file.
 func (handler *DnsHandler) initZone(ctx context.Context, zone string) error {
 	rules, err := kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsRules("").List(ctx, v1.ListOptions{
 		ResourceVersion: "0",
@@ -83,8 +107,11 @@ func (handler *DnsHandler) initZone(ctx context.Context, zone string) error {
 			item.Spec.Ttl, item.Spec.Type, item.Spec.Data)
 	}
 
+	if err := os.MkdirAll(handler.getZoneDir(zone), 0777); err != nil {
+		return err
+	}
 	// There is only one default view.
-	file, err := os.Create(handler.getZoneFile(zone, "default"))
+	file, err := os.Create(handler.getZoneFilePath(zone, defaultView))
 	defer func() {
 		if file != nil {
 			file.Close()
@@ -102,6 +129,10 @@ func (handler *DnsHandler) initZone(ctx context.Context, zone string) error {
 	return nil
 }
 
-func (handler *DnsHandler) getZoneFile(zone, view string) string {
+func (handler *DnsHandler) getZoneDir(zone string) string {
+	return fmt.Sprintf("%s/%s", handler.ZoneDst, zone)
+}
+
+func (handler *DnsHandler) getZoneFilePath(zone, view string) string {
 	return fmt.Sprintf("%s/%s/db.%s.conf", handler.ZoneDst, zone, view)
 }
