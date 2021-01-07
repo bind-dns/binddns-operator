@@ -21,9 +21,9 @@ var (
 	logMaxBackups int
 	logMaxAge     int
 	logCompress   bool
-	workThreads    int
-	enableHttpApi          bool
-	rootDomain   string
+	workThreads   int
+	enableHttpApi bool
+	rootDomain    string
 )
 
 func NewCommand() *cobra.Command {
@@ -59,7 +59,7 @@ func NewCommand() *cobra.Command {
 		},
 	}
 	initBindCmd := &cobra.Command{
-		Use: "init-config",
+		Use:   "init-config",
 		Short: "Init the bind configuration. Generally it used as Kubernetes init container.",
 		Run: func(cmd *cobra.Command, args []string) {
 			// Init log formatter

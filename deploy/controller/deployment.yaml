@@ -32,9 +32,9 @@ spec:
           emptyDir: {}
       initContainers:
         - name: init-config
-          image: binddns-operator:latest
+          image: binddns-controller:latest
           imagePullPolicy: IfNotPresent
-          command: ["/app/binddns-operator"]
+          command: ["/app/binddns-controller"]
           args: ["init-config"]
           volumeMounts:
             - name: acl-dir
@@ -45,7 +45,7 @@ spec:
               mountPath: /etc/named/view
       containers:
         - name: binddns-controller
-          image: binddns-operator:latest
+          image: binddns-controller:latest
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: rndc-conf

@@ -1,0 +1,19 @@
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: binddns-webhook
+  labels:
+    app: binddns-webhook
+webhooks:
+  - name: binddns-webhook.binddns.com
+    clientConfig:
+      service:
+        name: binddns-webhook-svc
+        namespace: default
+        path: "/mutate"
+      caBundle: ${CA_BUNDLE}
+    rules:
+      - operations: ["CREATE", "UPDATE"]
+        apiGroups: ["binddns.github.com"]
+        apiVersions: ["v1"]
+        resources: ["dnsdomains", "dnsrules"]

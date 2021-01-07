@@ -13,12 +13,12 @@ GOVERSION=$(go version)
 BUILDTIME=$(date "+%Y-%m-%d %H:%M:%S")
 
 # set package name.
-PACKAGE_APPNAME="github.com/bind-dns/${APPNAME}"
+PACKAGE="github.com/bind-dns/${REPONAME}"
 
-LDFLAGS="-s -w -X '${PACKAGE_APPNAME}/version.APPNAME=${APPNAME}' -X '${PACKAGE_APPNAME}/version.REVISION=${REVISION}' -X '${PACKAGE_APPNAME}/version.BRANCH=${BRANCH}' -X '${PACKAGE_APPNAME}/version.TAG=${TAG}' -X '${PACKAGE_APPNAME}/version.GOVERSION=${GOVERSION}' -X '${PACKAGE_APPNAME}/version.BUILDTIME=${BUILDTIME}' -X '${PACKAGE_APPNAME}/version.BINDVERSION=${BINDVERSION}'"
+LDFLAGS="-s -w -X '${PACKAGE}/version.APPNAME=${APPNAME}' -X '${PACKAGE}/version.REVISION=${REVISION}' -X '${PACKAGE}/version.BRANCH=${BRANCH}' -X '${PACKAGE}/version.TAG=${TAG}' -X '${PACKAGE}/version.GOVERSION=${GOVERSION}' -X '${PACKAGE}/version.BUILDTIME=${BUILDTIME}' -X '${PACKAGE}/version.BINDVERSION=${BINDVERSION}'"
 
 # go build
-CGO_ENABLED=0 go build -mod vendor -v -x -ldflags "${LDFLAGS}" -o ${ROOT}/build/binddns-controller/bin/${ARCH}/${APPNAME} ${ROOT}/cmd/controller/main.go
+CGO_ENABLED=0 go build -mod vendor -v -x -ldflags "${LDFLAGS}" -o ${ROOT}/build/${APPNAME}/bin/${ARCH}/${APPNAME} ${ROOT}/cmd/${BUILDDIR}/main.go
 
 # docker build
-docker build -t binddns-operator:latest ${ROOT}/build/binddns-controller
+docker build -t ${APPNAME}:latest ${ROOT}/build/${APPNAME}

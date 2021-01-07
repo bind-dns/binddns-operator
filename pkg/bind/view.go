@@ -37,7 +37,7 @@ func (handler *DnsHandler) initAllViews(ctx context.Context) (err error) {
 		if err = handler.initSingleView(viewList[i], domains); err != nil {
 			return err
 		}
-		allViews = append(allViews, fmt.Sprintf("include \"%s\";", handler.ViewDst+"/view_"+ defaultView +".conf"))
+		allViews = append(allViews, fmt.Sprintf("include \"%s\";", handler.ViewDst+"/view_"+defaultView+".conf"))
 	}
 
 	file, err := os.Create(handler.ViewDst + "/view.conf")
@@ -64,7 +64,7 @@ func (handler *DnsHandler) initSingleView(view string, domains *v1.DnsDomainList
 
 		zoneFiles = append(zoneFiles, fmt.Sprintf("        zone %s { type master; file \"%s\"; };",
 			domain.Name,
-			handler.ZoneDst + "/" + domain.Name + "/db." + view + ".conf"),
+			handler.ZoneDst+"/"+domain.Name+"/db."+view+".conf"),
 		)
 	}
 

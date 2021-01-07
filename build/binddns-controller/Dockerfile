@@ -1,8 +1,8 @@
-FROM alpine:3.12
+FROM centos:7
 
 ARG ARCH=amd64
 
-COPY bin/${ARCH}/binddns-operator /app/
+COPY bin/${ARCH}/binddns-controller /app/
 COPY rndc /etc/named/
 
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
@@ -10,4 +10,4 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
 
 WORKDIR /app
 
-CMD ["/app/binddns-operator"]
+CMD ["/app/binddns-controller"]
