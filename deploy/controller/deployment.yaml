@@ -47,6 +47,21 @@ spec:
         - name: binddns-controller
           image: binddns-controller:latest
           imagePullPolicy: IfNotPresent
+          command: ["/app/binddns-controller"]
+          args: ["--api"]
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
           volumeMounts:
             - name: rndc-conf
               mountPath: /etc/named/rndc.conf

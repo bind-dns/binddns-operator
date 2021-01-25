@@ -20,5 +20,10 @@ const (
 
 	DefaultRootDomain = "binddns.com"
 
-	DefaultEnableHttpApi = true
+	DefaultEnableHttpApi = false
+	DefaultHttpApiPort   = ":5388"
+
+	LabelZoneDnsRule = "binddns.k8s.io/zone"
+	LabelTypeDnsRule = "binddns.k8s.io/type"
+	LabelHostDnsRule = "binddns.k8s.io/host"
 )

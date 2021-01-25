@@ -15,6 +15,7 @@ spec:
       labels:
         app: binddns-webhook
     spec:
+      serviceAccount: binddns-sa
       containers:
         - name: binddns-webhook
           image: binddns-webhook:latest

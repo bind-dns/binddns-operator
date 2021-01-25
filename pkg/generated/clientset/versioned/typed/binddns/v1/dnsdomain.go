@@ -33,7 +33,7 @@ import (
 // DnsDomainsGetter has a method to return a DnsDomainInterface.
 // A group's client should implement this interface.
 type DnsDomainsGetter interface {
-	DnsDomains(namespace string) DnsDomainInterface
+	DnsDomains() DnsDomainInterface
 }
 
 // DnsDomainInterface has methods to work with DnsDomain resources.
@@ -53,14 +53,12 @@ type DnsDomainInterface interface {
 // dnsDomains implements DnsDomainInterface
 type dnsDomains struct {
 	client rest.Interface
-	ns     string
 }
 
 // newDnsDomains returns a DnsDomains
-func newDnsDomains(c *BinddnsV1Client, namespace string) *dnsDomains {
+func newDnsDomains(c *BinddnsV1Client) *dnsDomains {
 	return &dnsDomains{
 		client: c.RESTClient(),
-		ns:     namespace,
 	}
 }
 
@@ -68,7 +66,6 @@ func newDnsDomains(c *BinddnsV1Client, namespace string) *dnsDomains {
 func (c *dnsDomains) Get(ctx context.Context, name string, options metav1.GetOptions) (result *v1.DnsDomain, err error) {
 	result = &v1.DnsDomain{}
 	err = c.client.Get().
-		Namespace(c.ns).
 		Resource("dnsdomains").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
@@ -85,7 +82,6 @@ func (c *dnsDomains) List(ctx context.Context, opts metav1.ListOptions) (result 
 	}
 	result = &v1.DnsDomainList{}
 	err = c.client.Get().
-		Namespace(c.ns).
 		Resource("dnsdomains").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -102,7 +98,6 @@ func (c *dnsDomains) Watch(ctx context.Context, opts metav1.ListOptions) (watch.
 	}
 	opts.Watch = true
 	return c.client.Get().
-		Namespace(c.ns).
 		Resource("dnsdomains").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -113,7 +108,6 @@ func (c *dnsDomains) Watch(ctx context.Context, opts metav1.ListOptions) (watch.
 func (c *dnsDomains) Create(ctx context.Context, dnsDomain *v1.DnsDomain, opts metav1.CreateOptions) (result *v1.DnsDomain, err error) {
 	result = &v1.DnsDomain{}
 	err = c.client.Post().
-		Namespace(c.ns).
 		Resource("dnsdomains").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(dnsDomain).
@@ -126,7 +120,6 @@ func (c *dnsDomains) Create(ctx context.Context, dnsDomain *v1.DnsDomain, opts m
 func (c *dnsDomains) Update(ctx context.Context, dnsDomain *v1.DnsDomain, opts metav1.UpdateOptions) (result *v1.DnsDomain, err error) {
 	result = &v1.DnsDomain{}
 	err = c.client.Put().
-		Namespace(c.ns).
 		Resource("dnsdomains").
 		Name(dnsDomain.Name).
 		VersionedParams(&opts, scheme.ParameterCodec).
@@ -141,7 +134,6 @@ func (c *dnsDomains) Update(ctx context.Context, dnsDomain *v1.DnsDomain, opts m
 func (c *dnsDomains) UpdateStatus(ctx context.Context, dnsDomain *v1.DnsDomain, opts metav1.UpdateOptions) (result *v1.DnsDomain, err error) {
 	result = &v1.DnsDomain{}
 	err = c.client.Put().
-		Namespace(c.ns).
 		Resource("dnsdomains").
 		Name(dnsDomain.Name).
 		SubResource("status").
@@ -155,7 +147,6 @@ func (c *dnsDomains) UpdateStatus(ctx context.Context, dnsDomain *v1.DnsDomain, 
 // Delete takes name of the dnsDomain and deletes it. Returns an error if one occurs.
 func (c *dnsDomains) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
 	return c.client.Delete().
-		Namespace(c.ns).
 		Resource("dnsdomains").
 		Name(name).
 		Body(&opts).
@@ -170,7 +161,6 @@ func (c *dnsDomains) DeleteCollection(ctx context.Context, opts metav1.DeleteOpt
 		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
-		Namespace(c.ns).
 		Resource("dnsdomains").
 		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -183,7 +173,6 @@ func (c *dnsDomains) DeleteCollection(ctx context.Context, opts metav1.DeleteOpt
 func (c *dnsDomains) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.DnsDomain, err error) {
 	result = &v1.DnsDomain{}
 	err = c.client.Patch(pt).
-		Namespace(c.ns).
 		Resource("dnsdomains").
 		Name(name).
 		SubResource(subresources...).

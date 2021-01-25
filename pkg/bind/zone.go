@@ -10,6 +10,7 @@ import (
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	binddnsv1 "github.com/bind-dns/binddns-operator/pkg/apis/binddns/v1"
 	"github.com/bind-dns/binddns-operator/pkg/kube"
 	"github.com/bind-dns/binddns-operator/pkg/utils"
 	zlog "github.com/bind-dns/binddns-operator/pkg/utils/zaplog"
@@ -24,7 +25,7 @@ func (handler *DnsHandler) initAllZones(ctx context.Context) (err error) {
 		}
 	}()
 
-	domains, err := kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsDomains("").List(ctx, v1.ListOptions{
+	domains, err := kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsDomains().List(ctx, v1.ListOptions{
 		ResourceVersion: "0",
 	})
 	if err != nil {
@@ -32,7 +33,7 @@ func (handler *DnsHandler) initAllZones(ctx context.Context) (err error) {
 		return err
 	}
 	for i := range domains.Items {
-		err = handler.initZone(ctx, domains.Items[i].Name)
+		err = handler.initZone(ctx, &domains.Items[i])
 		if err != nil {
 			return err
 		}
@@ -42,7 +43,13 @@ func (handler *DnsHandler) initAllZones(ctx context.Context) (err error) {
 
 // ZoneAdd used to add a zone.
 func (handler *DnsHandler) ZoneAdd(zone string) error {
-	if err := handler.initZone(context.Background(), zone); err != nil {
+	ctx := context.Background()
+	domain, err := kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsDomains().Get(ctx, zone, v1.GetOptions{})
+	if err != nil {
+		zlog.Error(err)
+		return err
+	}
+	if err := handler.initZone(ctx, domain); err != nil {
 		return err
 	}
 
@@ -57,7 +64,13 @@ func (handler *DnsHandler) ZoneAdd(zone string) error {
 
 // ZoneUpdate used to update a zone.
 func (handler *DnsHandler) ZoneUpdate(zone string) error {
-	if err := handler.initZone(context.Background(), zone); err != nil {
+	ctx := context.Background()
+	domain, err := kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsDomains().Get(ctx, zone, v1.GetOptions{})
+	if err != nil {
+		zlog.Error(err)
+		return err
+	}
+	if err := handler.initZone(ctx, domain); err != nil {
 		return err
 	}
 
@@ -82,36 +95,54 @@ func (handler *DnsHandler) ZoneUpdate(zone string) error {
 
 // ZoneDelete used to delete a zone.
 func (handler *DnsHandler) ZoneDelete(zone string) error {
-	return nil
-}
-
-// initZone will init a single zone config file.
-func (handler *DnsHandler) initZone(ctx context.Context, zone string) error {
-	rules, err := kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsRules("").List(ctx, v1.ListOptions{
-		ResourceVersion: "0",
-	})
-	if err != nil {
+	if err := os.RemoveAll(handler.getZoneDir(zone)); err != nil {
 		zlog.Error(err)
 		return err
 	}
 
-	var recordStr string
-	for i := range rules.Items {
-		item := &rules.Items[i]
-		if item.Spec.Type == "MX" {
-			recordStr = fmt.Sprintf("%s %d %s 10 %s \n", strings.TrimSpace(item.Spec.Host),
-				item.Spec.Ttl, item.Spec.Type, item.Spec.Data)
-			continue
+	views := []string{defaultView}
+	for _, view := range views {
+		if err := exec.Command("/etc/named/rndc", "delzone", zone, "IN", view).Run(); err != nil {
+			zlog.Error(err)
+			return err
 		}
-		recordStr = fmt.Sprintf("%s %d %s %s\n", strings.TrimSpace(item.Spec.Host),
-			item.Spec.Ttl, item.Spec.Type, item.Spec.Data)
+	}
+	return nil
+}
+
+// initZone will init a single zone config file.
+func (handler *DnsHandler) initZone(ctx context.Context, domain *binddnsv1.DnsDomain) error {
+	var records []string
+	if domain.Spec.Enabled {
+		rules, err := kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsRules().List(ctx, v1.ListOptions{
+			ResourceVersion: "0",
+			LabelSelector:   utils.LabelZoneDnsRule + "=" + domain.Name,
+		})
+		if err != nil {
+			zlog.Error(err)
+			return err
+		}
+
+		for i := range rules.Items {
+			item := &rules.Items[i]
+			if !item.Spec.Enabled {
+				continue
+			}
+			if item.Spec.Type == "MX" {
+				records = append(records, fmt.Sprintf("%s %d %s 10 %s \n", strings.TrimSpace(item.Spec.Host),
+					item.Spec.Ttl, item.Spec.Type, item.Spec.Data))
+				continue
+			}
+			records = append(records, fmt.Sprintf("%s %d %s %s\n", strings.TrimSpace(item.Spec.Host),
+				item.Spec.Ttl, item.Spec.Type, item.Spec.Data))
+		}
 	}
 
-	if err := os.MkdirAll(handler.getZoneDir(zone), 0777); err != nil {
+	if err := os.MkdirAll(handler.getZoneDir(domain.Name), 0777); err != nil {
 		return err
 	}
 	// There is only one default view.
-	file, err := os.Create(handler.getZoneFilePath(zone, defaultView))
+	file, err := os.Create(handler.getZoneFilePath(domain.Name, defaultView))
 	defer func() {
 		if file != nil {
 			file.Close()
@@ -122,7 +153,7 @@ func (handler *DnsHandler) initZone(ctx context.Context, zone string) error {
 		return err
 	}
 
-	_, err = file.Write(utils.StringToBytes(fmt.Sprintf(ZoneTemplate, zone, time.Now().Unix(), recordStr)))
+	_, err = file.Write(utils.StringToBytes(fmt.Sprintf(ZoneTemplate, domain.Name, time.Now().Unix(), strings.Join(records, "\n"))))
 	if err != nil {
 		return err
 	}

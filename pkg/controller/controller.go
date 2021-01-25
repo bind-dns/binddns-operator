@@ -14,6 +14,7 @@ import (
 	"k8s.io/client-go/tools/record"
 
 	"github.com/bind-dns/binddns-operator/pkg/controller/queue"
+	"github.com/bind-dns/binddns-operator/pkg/controller/router"
 	dnsinformers "github.com/bind-dns/binddns-operator/pkg/generated/informers/externalversions"
 	dnslister "github.com/bind-dns/binddns-operator/pkg/generated/listers/binddns/v1"
 	"github.com/bind-dns/binddns-operator/pkg/utils"
@@ -43,6 +44,9 @@ type DnsController struct {
 
 	// dnsSynced define the dns already init at the beginning
 	dnsSynced bool
+
+	// httpServer http api object.
+	httpServer *router.HttpServer
 
 	workQueues []*queue.DnsQueue
 }
@@ -77,6 +81,10 @@ func NewDnsController(workThreads int32) (controller *DnsController, err error) 
 	dnsDomainInformer.Informer().AddEventHandlerWithResyncPeriod(&dnsDomainEventHandler{dnsController: controller}, 10*time.Minute)
 	dnsRuleInformer.Informer().AddEventHandlerWithResyncPeriod(&dnsRuleEventHandler{dnsController: controller}, 10*time.Minute)
 	return controller, nil
+}
+
+func (controller *DnsController) RegisterHttpRouter(port string) {
+	controller.httpServer = router.NewHttpServer(port)
 }
 
 func (controller *DnsController) generateWorkQueue(workThreads int32) {
@@ -117,6 +125,15 @@ func (controller *DnsController) Run(stopCh <-chan struct{}) error {
 		}(i)
 	}
 
+	// Start http server.
+	if controller.httpServer != nil {
+		wg.Add(1)
+		go func() {
+			controller.httpServer.Start()
+			wg.Done()
+		}()
+	}
+
 	// Received stop channel, and stop the work queues.
 	go func() {
 		<-stopCh
@@ -124,6 +141,7 @@ func (controller *DnsController) Run(stopCh <-chan struct{}) error {
 		for i := 0; i < queueLength; i++ {
 			controller.workQueues[i].Stop()
 		}
+		controller.httpServer.Stop()
 	}()
 	wg.Wait()
 

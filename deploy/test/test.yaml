@@ -3,9 +3,7 @@ kind: DnsDomain
 apiVersion: binddns.github.com/v1
 metadata:
   name: test.com
-  namespace: default
 spec:
-  name: test.com
   enabled: true
   remark: this is the remark
 
@@ -14,7 +12,6 @@ kind: DnsRule
 apiVersion: binddns.github.com/v1
 metadata:
   name: nothing
-  namespace: default
 spec:
   zone: test.com
   enabled: true
@@ -22,4 +19,4 @@ spec:
   type: A
   data: 1.1.1.1
   ttl: 60
-  maxPriority: 10
+  mxPriority: 10

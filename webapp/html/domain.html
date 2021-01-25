@@ -1,0 +1,289 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BIND-DNS</title>
+    <link rel="stylesheet" type="text/css" href="/static/lib/fontawesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/global.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/domain.css" />
+</head>
+
+<body>
+    <div id="wrapper">
+        <div class="domains">
+            <div class="nav">
+                <div class="nav-head">
+                    <h2>Domains</h2>
+                    <a href="javascript:void(0)" class="add-domain">
+                        <i class="fas fa-plus"></i> ADD
+                    </a>
+                </div>
+                <div class="search">
+                    <form onsubmit="return false;">
+                        <input id="search-domain" type="text" value="" />
+                        <i class="fas fa-search"></i>
+                    </form>
+                </div>
+            </div>
+            <div class="head">
+                <ul>
+                    <li class="head-item domain-name">
+                        <span>Domain</span>
+                    </li>
+                    <li class="head-item remark">
+                        <span>Remark</span>
+                    </li>
+                    <li class="head-item create-time">
+                        <span>Create Time</span>
+                    </li>
+                    <li class="head-item status">
+                        <span>Status</span>
+                    </li>
+                    <li class="head-item enabled">
+                        <span>Enabled</span>
+                    </li>
+                    <li class="head-item operate">
+                        <span>Operate</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="list-entity">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="mask-layer">
+        <div class="mask">
+            <div class="mask-head">
+                <p class="mask-head-title">ADD DOMAIN</p>
+                <a class="mask-close close" href="javascript:void(0)"></a>
+            </div>
+            <div class="mask-body">
+                <input type="text" placeholder="Enter domain name, eg: test.com" form-name="name" />
+                <input type="text" placeholder="Enter domain remark, eg: nothing" form-name="remark" />
+            </div>
+            <div class="mask-operate">
+                <button type="button" class="btn confirm">Confirm</button>
+                <button type="button" class="btn cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript" src="/static/lib/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/global.js"></script>
+<script>
+    $("#search-domain").val(getQueryVariable("search"))
+    let body = $("body")
+
+    // search
+    $(".search form").submit(function () {
+        let key = $.trim($("#search-domain").val());
+        window.location.href = "/console/domain?search=" + key
+    });
+
+    // add domain model
+    body.on("click", ".add-domain", function (){
+        $(".mask-layer").css("display", "block")
+    })
+
+    body.on("click", ".handle-delete", function (){
+        let entity = $(this).parents(".entity")
+        let domain = entity.find(".hidden-domain").val()
+
+        $.ajax({
+            url: "/api/domains/" + domain,
+            method: "DELETE",
+            success: function (data) {
+                if (data.code === 0) {
+                    entity.remove()
+                } else {
+                    alert(data.msg)
+                }
+            },
+            error: function (data) {
+                console.log(data);
+                alert("Server Interval Error")
+            }
+        })
+    })
+
+    body.on("click", ".handle-open", function (){
+        let entity = $(this).parents(".entity")
+        let domain = entity.find(".hidden-domain").val()
+
+        $.ajax({
+            url: "/api/domains/" + domain + "/open",
+            method: "PUT",
+            success: function (data) {
+                if (data.code === 0) {
+                    entity.find(".enabled").html(`<i class="fas fa-check-circle green"></i>`)
+                    entity.find(".handle-pause-open").html(`
+                        <a class="handle handle-pause">
+                            <span class="tips">PAUSE</span>
+                        </a>
+                    `)
+                } else {
+                    alert(data.msg)
+                }
+            },
+            error: function (data) {
+                console.log(data);
+                alert("Server Interval Error")
+            }
+        })
+    })
+
+    body.on("click", ".handle-pause", function (){
+        let entity = $(this).parents(".entity")
+        let domain = entity.find(".hidden-domain").val()
+
+        $.ajax({
+            url: "/api/domains/" + domain + "/pause",
+            method: "PUT",
+            success: function (data) {
+                if (data.code === 0) {
+                    entity.find(".enabled").html(`<span class="red">PAUSED</span>`)
+                    entity.find(".handle-pause-open").html(`
+                        <a class="handle handle-open">
+                            <span class="tips">OPEN</span>
+                        </a>`)
+                } else {
+                    alert(data.msg)
+                }
+            },
+            error: function (data) {
+                console.log(data);
+                alert("Server Interval Error")
+            }
+        })
+    })
+
+    function listDomains() {
+        let key = $.trim($("#search-domain").val());
+        let url = "/api/domains"
+        if (key !== "") {
+            url += "?search=" + key
+        }
+
+        $.ajax({
+            url: url,
+            method: "GET",
+            success: function (data) {
+                if (data.code === 0) {
+                    $.each(data.data, function (i, e) {
+                        let ul = $(`<ul></ul>`)
+
+                        ul.append(`<input class="hidden-domain" type="hidden" value="${e.Name}" />`)
+
+                        // Name
+                        ul.append(`
+                            <li class="domain-name hidden-overflow">
+                                <a href="/console/rules?domain=${e.Name}">${e.Name}</a>
+                            </li>
+                        `)
+
+                        // Remark
+                        ul.append(`
+                            <li class="remark hidden-overflow">
+                                <span>${e.Remark}</span>
+                            </li>
+                        `)
+
+                        // CreateTime
+                        ul.append(`
+                            <li class="create-time">
+                                <span>${e.CreateTime}</span>
+                            </li>
+                        `)
+
+                        // Status
+                        ul.append(`
+                            <li class="status">
+                                <span class="item ${e.Status}">${e.Status}</span>
+                            </li>
+                        `)
+
+                        // Enabled
+                        if (e.Enabled) {
+                            ul.append(`<li class="enabled"><span><i class="fas fa-check-circle green"></i></span></li>`)
+                        } else {
+                            ul.append(`<li class="enabled"><span class="red">PAUSED</span></li>`)
+                        }
+
+                        // Operate
+                        if (e.Enabled) {
+                            ul.append(`
+                                <li class="operate">
+                                    <span class="handle-pause-open">
+                                        <a class="handle handle-pause">
+                                            <span class="tips">PAUSE</span>
+                                        </a>
+                                    </span>
+                                    <a class="handle handle-delete">
+                                        <span class="tips">DELETE</span>
+                                    </a>
+                                </li>`)
+                        } else {
+                            ul.append(`
+                                <li class="operate">
+                                    <span class="handle-pause-open">
+                                        <a class="handle handle-open">
+                                            <span class="tips">OPEN</span>
+                                        </a>
+                                    </span>
+                                    <a class="handle handle-delete">
+                                        <span class="tips">DELETE</span>
+                                    </a>
+                                </li>
+                            `)
+                        }
+                        $(".list-entity").append(
+                            $(`<div class="entity"></div>`).append($("<ul></ul>").html(ul.html()))
+                        )
+                    })
+                } else {
+                    alert(data.msg)
+                }
+            },
+            error: function (data) {
+                console.log(data);
+                alert("Server Interval Error")
+            }
+        })
+    }
+
+    body.on("click", ".mask-layer .btn.confirm", function (){
+        let domain = $.trim($(".mask-layer").find("input[form-name='name']").val());
+        let remark = $.trim($(".mask-layer").find("input[form-name='remark']").val());
+        if (domain === "") {
+            alert("域名不能为空");
+            return;
+        }
+
+        $.ajax({
+            url: "/api/domains",
+            method: "POST",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: JSON.stringify({
+                "name": domain,
+                "remark": remark,
+            }),
+            success: function (data) {
+                if (data.code === 0) {
+                    location.href = window.location.pathname;
+                } else {
+                    alert(data.msg)
+                }
+            },
+            error: function (data) {
+                console.log(data);
+                alert("Server Interval Error")
+            }
+        })
+    })
+
+    listDomains()
+</script>
+</html>

@@ -23,7 +23,7 @@ func (handler *DnsHandler) initAllViews(ctx context.Context) (err error) {
 		}
 	}()
 
-	domains, err := kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsDomains("").List(ctx, metav1.ListOptions{
+	domains, err := kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsDomains().List(ctx, metav1.ListOptions{
 		ResourceVersion: "0",
 	})
 	if err != nil {
@@ -43,7 +43,7 @@ func (handler *DnsHandler) initAllViews(ctx context.Context) (err error) {
 	file, err := os.Create(handler.ViewDst + "/view.conf")
 	defer func() {
 		if file != nil {
-			file.Close()
+			_ = file.Close()
 		}
 	}()
 	if err != nil {
@@ -72,7 +72,7 @@ func (handler *DnsHandler) initSingleView(view string, domains *v1.DnsDomainList
 	file, err := os.Create(handler.getViewFilePath(view))
 	defer func() {
 		if file != nil {
-			file.Close()
+			_ = file.Close()
 		}
 	}()
 	if err != nil {

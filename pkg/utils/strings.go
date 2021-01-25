@@ -20,3 +20,25 @@ func StringToBytes(s string) []byte {
 	bh := [3]uintptr{sh[0], sh[1], sh[1]}
 	return *(*[]byte)(unsafe.Pointer(&bh))
 }
+
+func SubString(source string, start, end int) string {
+	r := []rune(source)
+	length := len(r)
+
+	if start < 0 || end > length || start > end {
+		return ""
+	}
+	if start == 0 && end == length {
+		return source
+	}
+	return string(r[start:end])
+}
+
+func SliceContain(slice []string, target string) bool {
+	for i := range slice {
+		if slice[i] == target {
+			return true
+		}
+	}
+	return false
+}

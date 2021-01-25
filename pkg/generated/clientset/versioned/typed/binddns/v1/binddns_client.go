@@ -35,12 +35,12 @@ type BinddnsV1Client struct {
 	restClient rest.Interface
 }
 
-func (c *BinddnsV1Client) DnsDomains(namespace string) DnsDomainInterface {
-	return newDnsDomains(c, namespace)
+func (c *BinddnsV1Client) DnsDomains() DnsDomainInterface {
+	return newDnsDomains(c)
 }
 
-func (c *BinddnsV1Client) DnsRules(namespace string) DnsRuleInterface {
-	return newDnsRules(c, namespace)
+func (c *BinddnsV1Client) DnsRules() DnsRuleInterface {
+	return newDnsRules(c)
 }
 
 // NewForConfig creates a new BinddnsV1Client for the given config.

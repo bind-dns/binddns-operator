@@ -13,7 +13,7 @@ metadata:
 rules:
   - apiGroups: ["binddns.github.com"]
     resources: ["dnsdomains", "dnsrules", "dnsdomains/status", "dnsrules/status"]
-    verbs: ["get", "list", "watch", "update", "patch", "create", "delete"]
+    verbs: ["*"]
 
 ---
 kind: ClusterRoleBinding

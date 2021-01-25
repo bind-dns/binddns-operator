@@ -31,8 +31,9 @@ type DnsDomainLister interface {
 	// List lists all DnsDomains in the indexer.
 	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1.DnsDomain, err error)
-	// DnsDomains returns an object that can list and get DnsDomains.
-	DnsDomains(namespace string) DnsDomainNamespaceLister
+	// Get retrieves the DnsDomain from the index for a given name.
+	// Objects returned here must be treated as read-only.
+	Get(name string) (*v1.DnsDomain, error)
 	DnsDomainListerExpansion
 }
 
@@ -54,41 +55,9 @@ func (s *dnsDomainLister) List(selector labels.Selector) (ret []*v1.DnsDomain, e
 	return ret, err
 }
 
-// DnsDomains returns an object that can list and get DnsDomains.
-func (s *dnsDomainLister) DnsDomains(namespace string) DnsDomainNamespaceLister {
-	return dnsDomainNamespaceLister{indexer: s.indexer, namespace: namespace}
-}
-
-// DnsDomainNamespaceLister helps list and get DnsDomains.
-// All objects returned here must be treated as read-only.
-type DnsDomainNamespaceLister interface {
-	// List lists all DnsDomains in the indexer for a given namespace.
-	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1.DnsDomain, err error)
-	// Get retrieves the DnsDomain from the indexer for a given namespace and name.
-	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1.DnsDomain, error)
-	DnsDomainNamespaceListerExpansion
-}
-
-// dnsDomainNamespaceLister implements the DnsDomainNamespaceLister
-// interface.
-type dnsDomainNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all DnsDomains in the indexer for a given namespace.
-func (s dnsDomainNamespaceLister) List(selector labels.Selector) (ret []*v1.DnsDomain, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1.DnsDomain))
-	})
-	return ret, err
-}
-
-// Get retrieves the DnsDomain from the indexer for a given namespace and name.
-func (s dnsDomainNamespaceLister) Get(name string) (*v1.DnsDomain, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
+// Get retrieves the DnsDomain from the index for a given name.
+func (s *dnsDomainLister) Get(name string) (*v1.DnsDomain, error) {
+	obj, exists, err := s.indexer.GetByKey(name)
 	if err != nil {
 		return nil, err
 	}

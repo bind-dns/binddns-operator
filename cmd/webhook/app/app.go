@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/bind-dns/binddns-operator/pkg/kube"
 	"github.com/bind-dns/binddns-operator/pkg/utils"
 	zlog "github.com/bind-dns/binddns-operator/pkg/utils/zaplog"
 	"github.com/bind-dns/binddns-operator/pkg/webhook"
@@ -27,6 +28,12 @@ func NewCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			// Init log zlog.
 			zlog.DefaultLog(logFile)
+
+			// Init kubeclient
+			if err := kube.InitKubernetesClient(); err != nil {
+				zlog.Error(err)
+				return
+			}
 
 			server := webhook.NewAdmissionWebhookServer()
 			server.ListenPort = listenPort

@@ -33,7 +33,6 @@ import (
 // FakeDnsDomains implements DnsDomainInterface
 type FakeDnsDomains struct {
 	Fake *FakeBinddnsV1
-	ns   string
 }
 
 var dnsdomainsResource = schema.GroupVersionResource{Group: "binddns.github.com", Version: "v1", Resource: "dnsdomains"}
@@ -43,8 +42,7 @@ var dnsdomainsKind = schema.GroupVersionKind{Group: "binddns.github.com", Versio
 // Get takes name of the dnsDomain, and returns the corresponding dnsDomain object, and an error if there is any.
 func (c *FakeDnsDomains) Get(ctx context.Context, name string, options v1.GetOptions) (result *binddnsv1.DnsDomain, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(dnsdomainsResource, c.ns, name), &binddnsv1.DnsDomain{})
-
+		Invokes(testing.NewRootGetAction(dnsdomainsResource, name), &binddnsv1.DnsDomain{})
 	if obj == nil {
 		return nil, err
 	}
@@ -54,8 +52,7 @@ func (c *FakeDnsDomains) Get(ctx context.Context, name string, options v1.GetOpt
 // List takes label and field selectors, and returns the list of DnsDomains that match those selectors.
 func (c *FakeDnsDomains) List(ctx context.Context, opts v1.ListOptions) (result *binddnsv1.DnsDomainList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(dnsdomainsResource, dnsdomainsKind, c.ns, opts), &binddnsv1.DnsDomainList{})
-
+		Invokes(testing.NewRootListAction(dnsdomainsResource, dnsdomainsKind, opts), &binddnsv1.DnsDomainList{})
 	if obj == nil {
 		return nil, err
 	}
@@ -76,15 +73,13 @@ func (c *FakeDnsDomains) List(ctx context.Context, opts v1.ListOptions) (result 
 // Watch returns a watch.Interface that watches the requested dnsDomains.
 func (c *FakeDnsDomains) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(dnsdomainsResource, c.ns, opts))
-
+		InvokesWatch(testing.NewRootWatchAction(dnsdomainsResource, opts))
 }
 
 // Create takes the representation of a dnsDomain and creates it.  Returns the server's representation of the dnsDomain, and an error, if there is any.
 func (c *FakeDnsDomains) Create(ctx context.Context, dnsDomain *binddnsv1.DnsDomain, opts v1.CreateOptions) (result *binddnsv1.DnsDomain, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(dnsdomainsResource, c.ns, dnsDomain), &binddnsv1.DnsDomain{})
-
+		Invokes(testing.NewRootCreateAction(dnsdomainsResource, dnsDomain), &binddnsv1.DnsDomain{})
 	if obj == nil {
 		return nil, err
 	}
@@ -94,8 +89,7 @@ func (c *FakeDnsDomains) Create(ctx context.Context, dnsDomain *binddnsv1.DnsDom
 // Update takes the representation of a dnsDomain and updates it. Returns the server's representation of the dnsDomain, and an error, if there is any.
 func (c *FakeDnsDomains) Update(ctx context.Context, dnsDomain *binddnsv1.DnsDomain, opts v1.UpdateOptions) (result *binddnsv1.DnsDomain, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(dnsdomainsResource, c.ns, dnsDomain), &binddnsv1.DnsDomain{})
-
+		Invokes(testing.NewRootUpdateAction(dnsdomainsResource, dnsDomain), &binddnsv1.DnsDomain{})
 	if obj == nil {
 		return nil, err
 	}
@@ -106,8 +100,7 @@ func (c *FakeDnsDomains) Update(ctx context.Context, dnsDomain *binddnsv1.DnsDom
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
 func (c *FakeDnsDomains) UpdateStatus(ctx context.Context, dnsDomain *binddnsv1.DnsDomain, opts v1.UpdateOptions) (*binddnsv1.DnsDomain, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(dnsdomainsResource, "status", c.ns, dnsDomain), &binddnsv1.DnsDomain{})
-
+		Invokes(testing.NewRootUpdateSubresourceAction(dnsdomainsResource, "status", dnsDomain), &binddnsv1.DnsDomain{})
 	if obj == nil {
 		return nil, err
 	}
@@ -117,14 +110,13 @@ func (c *FakeDnsDomains) UpdateStatus(ctx context.Context, dnsDomain *binddnsv1.
 // Delete takes name of the dnsDomain and deletes it. Returns an error if one occurs.
 func (c *FakeDnsDomains) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(dnsdomainsResource, c.ns, name), &binddnsv1.DnsDomain{})
-
+		Invokes(testing.NewRootDeleteAction(dnsdomainsResource, name), &binddnsv1.DnsDomain{})
 	return err
 }
 
 // DeleteCollection deletes a collection of objects.
 func (c *FakeDnsDomains) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(dnsdomainsResource, c.ns, listOpts)
+	action := testing.NewRootDeleteCollectionAction(dnsdomainsResource, listOpts)
 
 	_, err := c.Fake.Invokes(action, &binddnsv1.DnsDomainList{})
 	return err
@@ -133,8 +125,7 @@ func (c *FakeDnsDomains) DeleteCollection(ctx context.Context, opts v1.DeleteOpt
 // Patch applies the patch and returns the patched dnsDomain.
 func (c *FakeDnsDomains) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *binddnsv1.DnsDomain, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(dnsdomainsResource, c.ns, name, pt, data, subresources...), &binddnsv1.DnsDomain{})
-
+		Invokes(testing.NewRootPatchSubresourceAction(dnsdomainsResource, name, pt, data, subresources...), &binddnsv1.DnsDomain{})
 	if obj == nil {
 		return nil, err
 	}

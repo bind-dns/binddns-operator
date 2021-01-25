@@ -28,19 +28,22 @@ metadata:
 data:
   named.conf: |
     options {
-        directory           	"/etc/named/";
+        directory               "/etc/named/";
         # Close recursion
         recursion               no;
-        # Close fetch-glue
-        fetch-glue              no;
         # Hide version
         version                 "Unknown";
-        listen-on port 53   	{ any; };
-        max-recursion-queries 	200;
-        dump-file       	"/etc/named/data/cache_dump.db";
-        statistics-file 	"/etc/named/data/named_stats.txt";
-        allow-query     	{ any; };
-        blackhole       	{ none; };
+        listen-on port 53       { any; };
+        notify                  no;
+        max-cache-size          8M;
+        datasize                100M;
+        check-names             master ignore;
+        dump-file               "/etc/named/data/cache_dump.db";
+        statistics-file         "/etc/named/data/named_stats.txt";
+        allow-query             { any; };
+        blackhole               { none; };
+        allow-update            { key "rndc-key"; };
+        allow-new-zones         yes;
     };
 
     #rndc

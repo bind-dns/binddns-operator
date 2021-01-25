@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	binddnsv1 "github.com/bind-dns/binddns-operator/pkg/apis/binddns/v1"
 	"github.com/bind-dns/binddns-operator/pkg/controller/queue"
+	k8sstatus "github.com/bind-dns/binddns-operator/pkg/controller/status"
 	"github.com/bind-dns/binddns-operator/pkg/kube"
-	"github.com/bind-dns/binddns-operator/pkg/utils"
 	zlog "github.com/bind-dns/binddns-operator/pkg/utils/zaplog"
 )
 
@@ -20,63 +21,78 @@ type dnsRuleEventHandler struct {
 func (handler *dnsRuleEventHandler) OnAdd(obj interface{}) {
 	rule := obj.(*binddnsv1.DnsRule)
 
-	// Update DnsRule resource status.
-	if rule.Status.CreateTime == "" {
-		rule.Status = binddnsv1.DnsRuleStatus{
-			CreateTime: utils.TimeNow(),
-			UpdateTime: utils.TimeNow(),
-		}
-	}
-	if err := updateDnsRuleStatus(rule); err != nil {
-		zlog.Errorf("update dnsrules \"%s\" status failed, err: %s", rule.Name, err.Error())
-	}
-
 	// Send message to queue.
 	if handler.dnsController.enqueue(&queue.DnsEvent{
 		Domain:    rule.Spec.Zone,
 		EventType: queue.DomainUpdate,
 	}) {
-		zlog.Infof("dnsrules \"%s\" is added. %s", rule.Name, convertRuleToString(rule))
+		// Update DnsRule status
+		if err := k8sstatus.UpdateRuleStatus(rule.Name); err != nil {
+			zlog.Error(err)
+		}
+
+		zlog.Infof("DnsRule \"%s\" is added. %s", rule.Name, convertRuleToString(rule))
 	}
 }
 
 func (handler *dnsRuleEventHandler) OnUpdate(oldObj, newObj interface{}) {
-	rule := newObj.(*binddnsv1.DnsRule)
+	oldRule := oldObj.(*binddnsv1.DnsRule)
+	newRule := newObj.(*binddnsv1.DnsRule)
 
-	// Update DnsRule resource status
-	rule.Status.UpdateTime = utils.TimeNow()
-	if err := updateDnsRuleStatus(rule); err != nil {
-		zlog.Errorf("update dnsrules \"%s\" failed, err: %s", rule.Name, err.Error())
+	isUpdate := false
+	if oldRule.Spec.Enabled != newRule.Spec.Enabled || oldRule.Spec.Data != newRule.Spec.Data ||
+		oldRule.Spec.Ttl != newRule.Spec.Ttl || oldRule.Spec.Host != newRule.Spec.Host ||
+		oldRule.Spec.Type != newRule.Spec.Type || oldRule.Spec.MxPriority != newRule.Spec.MxPriority {
+		isUpdate = true
+	}
+	if !isUpdate {
+		return
 	}
 
 	// Send message to queue.
 	if handler.dnsController.enqueue(&queue.DnsEvent{
-		Domain:    rule.Spec.Zone,
+		Domain:    newRule.Spec.Zone,
 		EventType: queue.DomainUpdate,
 	}) {
-		zlog.Infof("dnsrules \"%s\" is updated. %s", rule.Name, convertRuleToString(rule))
+		// Update DnsRule status
+		if err := k8sstatus.UpdateRuleStatus(newRule.Name); err != nil {
+			zlog.Error(err)
+		}
+
+		zlog.Infof("DnsRule \"%s\" is updated. %s", newRule.Name, convertRuleToString(newRule))
 	}
 }
 
 func (handler *dnsRuleEventHandler) OnDelete(obj interface{}) {
 	rule := obj.(*binddnsv1.DnsRule)
 
+	zone := rule.Spec.Zone
+	// If DnsDomain is deleted, don't handle the event of DnsRule delete.
+	_, err := kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsDomains().Get(context.Background(), zone, v1.GetOptions{})
+	if err != nil {
+		if k8sErrors.IsNotFound(err) {
+			zlog.Warnf("DnsDomain \"%s\" is not found", zone)
+		} else {
+			zlog.Error(err)
+		}
+		return
+	}
+
 	// Send message to queue.
 	if handler.dnsController.enqueue(&queue.DnsEvent{
-		Domain:    rule.Spec.Zone,
+		Domain:    zone,
 		EventType: queue.DomainUpdate,
 	}) {
-		zlog.Infof("dnsrules \"%s\" is deleted. %s", rule.Name, convertRuleToString(rule))
+		// Update DnsRule status
+		if err := k8sstatus.UpdateDomainStatus(zone, binddnsv1.DomainProgressing); err != nil {
+			zlog.Error(err)
+		}
+
+		zlog.Infof("DnsRule \"%s\" is deleted. %s", rule.Name, convertRuleToString(rule))
 	}
 }
 
 func convertRuleToString(rule *binddnsv1.DnsRule) string {
 	return fmt.Sprintf("Zone: %s, Host: %s, Type: %s, Data: %s, Ttl: %d, MxPriority: %d",
 		rule.Spec.Zone, rule.Spec.Host, rule.Spec.Type, rule.Spec.Data, rule.Spec.Ttl, rule.Spec.MxPriority)
-}
-
-func updateDnsRuleStatus(rule *binddnsv1.DnsRule) (err error) {
-	_, err = kube.GetKubeClient().GetDnsClientSet().BinddnsV1().DnsRules(rule.Namespace).
-		UpdateStatus(context.Background(), rule, v1.UpdateOptions{})
-	return err
 }

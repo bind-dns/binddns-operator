@@ -1,0 +1,63 @@
+.domains {
+    width: 100%;
+    margin: 0 0 20px 0;
+    text-align: left;
+    border-spacing: 0;
+}
+
+.add-domain {
+    float: left;
+    background: #f05e0f;
+    border-radius: 3px;
+    line-height: 21px;
+    margin: 14px 0 0 0;
+    font-size: 13px;
+    color: #fff;
+    padding: 1px 6px 0 6px;
+    text-decoration: none;
+}
+
+.entity li {
+    margin-top: 16px;
+}
+
+.entity ul li.operate {
+    margin-top: 10px;
+}
+
+.domain-name {
+    width: 20%;
+}
+
+.remark {
+    width: 20%;
+}
+
+.create-time {
+    width: 20%;
+}
+
+.status {
+    width: 10%;
+}
+
+.enabled {
+    width: 10%;
+}
+
+.enabled .red {
+    font-weight: bold;
+}
+
+.operate {
+    width: 20%;
+}
+
+.status .item {
+    display: none;
+}
+
+.status .item.Available {
+    display: block;
+}
+

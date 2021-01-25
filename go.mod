@@ -3,8 +3,12 @@ module github.com/bind-dns/binddns-operator
 go 1.14
 
 require (
+	github.com/gin-contrib/gzip v0.0.3
+	github.com/gin-contrib/pprof v1.3.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/googleapis/gnostic v0.5.3 // indirect
+	github.com/pkg/errors v0.9.1
+	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.1.1
 	go.uber.org/zap v1.10.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0

@@ -33,7 +33,7 @@ import (
 // DnsRulesGetter has a method to return a DnsRuleInterface.
 // A group's client should implement this interface.
 type DnsRulesGetter interface {
-	DnsRules(namespace string) DnsRuleInterface
+	DnsRules() DnsRuleInterface
 }
 
 // DnsRuleInterface has methods to work with DnsRule resources.
@@ -53,14 +53,12 @@ type DnsRuleInterface interface {
 // dnsRules implements DnsRuleInterface
 type dnsRules struct {
 	client rest.Interface
-	ns     string
 }
 
 // newDnsRules returns a DnsRules
-func newDnsRules(c *BinddnsV1Client, namespace string) *dnsRules {
+func newDnsRules(c *BinddnsV1Client) *dnsRules {
 	return &dnsRules{
 		client: c.RESTClient(),
-		ns:     namespace,
 	}
 }
 
@@ -68,7 +66,6 @@ func newDnsRules(c *BinddnsV1Client, namespace string) *dnsRules {
 func (c *dnsRules) Get(ctx context.Context, name string, options metav1.GetOptions) (result *v1.DnsRule, err error) {
 	result = &v1.DnsRule{}
 	err = c.client.Get().
-		Namespace(c.ns).
 		Resource("dnsrules").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
@@ -85,7 +82,6 @@ func (c *dnsRules) List(ctx context.Context, opts metav1.ListOptions) (result *v
 	}
 	result = &v1.DnsRuleList{}
 	err = c.client.Get().
-		Namespace(c.ns).
 		Resource("dnsrules").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -102,7 +98,6 @@ func (c *dnsRules) Watch(ctx context.Context, opts metav1.ListOptions) (watch.In
 	}
 	opts.Watch = true
 	return c.client.Get().
-		Namespace(c.ns).
 		Resource("dnsrules").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -113,7 +108,6 @@ func (c *dnsRules) Watch(ctx context.Context, opts metav1.ListOptions) (watch.In
 func (c *dnsRules) Create(ctx context.Context, dnsRule *v1.DnsRule, opts metav1.CreateOptions) (result *v1.DnsRule, err error) {
 	result = &v1.DnsRule{}
 	err = c.client.Post().
-		Namespace(c.ns).
 		Resource("dnsrules").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(dnsRule).
@@ -126,7 +120,6 @@ func (c *dnsRules) Create(ctx context.Context, dnsRule *v1.DnsRule, opts metav1.
 func (c *dnsRules) Update(ctx context.Context, dnsRule *v1.DnsRule, opts metav1.UpdateOptions) (result *v1.DnsRule, err error) {
 	result = &v1.DnsRule{}
 	err = c.client.Put().
-		Namespace(c.ns).
 		Resource("dnsrules").
 		Name(dnsRule.Name).
 		VersionedParams(&opts, scheme.ParameterCodec).
@@ -141,7 +134,6 @@ func (c *dnsRules) Update(ctx context.Context, dnsRule *v1.DnsRule, opts metav1.
 func (c *dnsRules) UpdateStatus(ctx context.Context, dnsRule *v1.DnsRule, opts metav1.UpdateOptions) (result *v1.DnsRule, err error) {
 	result = &v1.DnsRule{}
 	err = c.client.Put().
-		Namespace(c.ns).
 		Resource("dnsrules").
 		Name(dnsRule.Name).
 		SubResource("status").
@@ -155,7 +147,6 @@ func (c *dnsRules) UpdateStatus(ctx context.Context, dnsRule *v1.DnsRule, opts m
 // Delete takes name of the dnsRule and deletes it. Returns an error if one occurs.
 func (c *dnsRules) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
 	return c.client.Delete().
-		Namespace(c.ns).
 		Resource("dnsrules").
 		Name(name).
 		Body(&opts).
@@ -170,7 +161,6 @@ func (c *dnsRules) DeleteCollection(ctx context.Context, opts metav1.DeleteOptio
 		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
-		Namespace(c.ns).
 		Resource("dnsrules").
 		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -183,7 +173,6 @@ func (c *dnsRules) DeleteCollection(ctx context.Context, opts metav1.DeleteOptio
 func (c *dnsRules) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.DnsRule, err error) {
 	result = &v1.DnsRule{}
 	err = c.client.Patch(pt).
-		Namespace(c.ns).
 		Resource("dnsrules").
 		Name(name).
 		SubResource(subresources...).

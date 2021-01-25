@@ -23,6 +23,7 @@ var (
 	logCompress   bool
 	workThreads   int
 	enableHttpApi bool
+	httpApiPort string
 	rootDomain    string
 )
 
@@ -45,6 +46,9 @@ func NewCommand() *cobra.Command {
 			if err != nil {
 				zlog.Error(err)
 				return
+			}
+			if enableHttpApi {
+				o.RegisterHttpRouter(httpApiPort)
 			}
 
 			// Handle shutdown signals.
@@ -89,6 +93,7 @@ func NewCommand() *cobra.Command {
 	rootCmd.AddCommand(initBindCmd)
 
 	rootCmd.PersistentFlags().BoolVar(&enableHttpApi, "api", utils.DefaultEnableHttpApi, "enable http api.")
+	rootCmd.PersistentFlags().StringVar(&httpApiPort, "api-port", utils.DefaultHttpApiPort, "http api port.")
 	rootCmd.PersistentFlags().IntVar(&workThreads, "work-threads", utils.DefaultWorkThreads, "the num of update dns-rules threads.")
 	rootCmd.PersistentFlags().StringVar(&rootDomain, "root-domain", utils.DefaultRootDomain, "")
 

@@ -28,12 +28,12 @@ type FakeBinddnsV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeBinddnsV1) DnsDomains(namespace string) v1.DnsDomainInterface {
-	return &FakeDnsDomains{c, namespace}
+func (c *FakeBinddnsV1) DnsDomains() v1.DnsDomainInterface {
+	return &FakeDnsDomains{c}
 }
 
-func (c *FakeBinddnsV1) DnsRules(namespace string) v1.DnsRuleInterface {
-	return &FakeDnsRules{c, namespace}
+func (c *FakeBinddnsV1) DnsRules() v1.DnsRuleInterface {
+	return &FakeDnsRules{c}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

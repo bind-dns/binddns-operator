@@ -1,7 +1,9 @@
 package queue
 
 import (
+	binddnsv1 "github.com/bind-dns/binddns-operator/pkg/apis/binddns/v1"
 	"github.com/bind-dns/binddns-operator/pkg/bind"
+	k8sstatus "github.com/bind-dns/binddns-operator/pkg/controller/status"
 	zlog "github.com/bind-dns/binddns-operator/pkg/utils/zaplog"
 )
 
@@ -12,14 +14,14 @@ const (
 	DomainUpdate DnsEventType = "DomainUpdate"
 	DomainDelete DnsEventType = "DomainDelete"
 
-	defaultQueueSize = 10
+	defaultQueueSize = 20
 )
 
 var (
-	domainHandlerMap = map[DnsEventType]func(domain string){
-		DomainAdd:    handleDomainAdd,
-		DomainUpdate: handleDomainUpdate,
-		DomainDelete: handleDomainDelete,
+	domainHandlerMap = map[DnsEventType]func(domain string) error{
+		DomainAdd:    bind.GetDnsHandler().ZoneAdd,
+		DomainUpdate: bind.GetDnsHandler().ZoneUpdate,
+		DomainDelete: bind.GetDnsHandler().ZoneDelete,
 	}
 )
 
@@ -74,7 +76,26 @@ LOOP:
 					zlog.Errorf("Unknown %s type handler.", event.EventType)
 					continue
 				}
-				f(event.Domain)
+
+				err := f(event.Domain)
+				if err != nil {
+					zlog.Errorf("%s %s failed", event.Domain, event.EventType)
+				} else {
+					zlog.Infof("%s %s successfully", event.Domain, event.EventType)
+				}
+				if event.EventType == DomainDelete {
+					continue
+				}
+
+				status := binddnsv1.DomainAvailable
+				if err != nil {
+					status = binddnsv1.DomainFailure
+				}
+				if err = k8sstatus.UpdateDomainStatus(event.Domain, status); err != nil {
+					zlog.Error(err)
+					continue
+				}
+				zlog.Infof("%s update status successfully", event.Domain)
 			}
 		case <-queue.quit:
 			{
@@ -87,22 +108,4 @@ LOOP:
 
 func (queue *DnsQueue) Stop() {
 	queue.quit <- struct{}{}
-}
-
-func handleDomainAdd(domain string) {
-	if err := bind.GetDnsHandler().ZoneAdd(domain); err != nil {
-		zlog.Errorf("add domain %s failed, err: %s", domain, err.Error())
-	}
-}
-
-func handleDomainUpdate(domain string) {
-	if err := bind.GetDnsHandler().ZoneUpdate(domain); err != nil {
-		zlog.Errorf("update domain %s failed, err: %s", domain, err.Error())
-	}
-}
-
-func handleDomainDelete(domain string) {
-	if err := bind.GetDnsHandler().ZoneDelete(domain); err != nil {
-		zlog.Errorf("delete domain %s failed, err: %s", domain, err.Error())
-	}
 }

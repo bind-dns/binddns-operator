@@ -1,0 +1,292 @@
+body {
+    font-size: 14px;
+    font-family: gdsherpa,Helvetica,Arial,"Hiragino Sans GB",sans-serif;
+}
+
+html, body, div, span, object, h1, h2, h3, h4, h5, h6, p, a, abbr, address, del, em, img, small, strong, sub, sup, dd, dl, dt, li, ol, ul, fieldset, form, label, legend, input, button, select, textarea, table, caption, tbody, tfoot, thead, tr, th, td {
+    padding: 0;
+    margin: 0;
+    border: 0;
+    outline: 0;
+}
+
+a {
+    text-decoration: none;
+}
+h2 {
+    float: left;
+    line-height: 50px;
+    font-size: 24px;
+    color: rgb(30,30,30);
+    margin: 0 12px 0 0;
+    max-width: 400px;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+button {
+    font-family: gdsherpa,Helvetica,Arial,sans-serif;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+.hidden-overflow {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+ul {
+    padding: 0 10px;
+}
+
+.nav {
+    width: 100%;
+}
+
+.nav-head {
+    float: left;
+}
+
+.add-domain {
+    line-height: 50px;
+}
+
+.nav, .nav-head, .head:after, ul:after, .entity:after, .mask-operate:after {
+    display: table;
+    content: ' ';
+    clear: both;
+}
+
+li {
+    list-style: none;
+}
+
+.search {
+    float: right;
+    margin-top: 8px;
+}
+
+form {
+    border: 1px #cdcccc solid;
+    background: #fff;
+    border-radius: 3px;
+    padding: 0 7px;
+    height: 30px;
+    margin: 0 auto;
+}
+
+form input {
+    outline: none;
+    border: 0 none;
+    height: 28px;
+    width: 150px;
+    float: left;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+form i {
+    display: inline-block;
+    color: rgb(182,182,182);
+    font-size: 14px;
+    margin: 8px 5px 0 0;
+}
+
+#wrapper {
+    margin: 10px auto 50px;
+    width: 800px;
+}
+
+.head {
+    background: #ededed;
+    font-size: 14px;
+    padding: 18px 0;
+}
+
+.head-item {
+    float: left;
+    font-weight: bold;
+}
+
+.entity {
+    height: 45px;
+    border-bottom: 1px #d7d6d6 solid;
+    font-size: 13px;
+}
+
+.entity:hover {
+    background: rgb(253,246,242);
+}
+
+.Available {
+    color: #33a451;
+}
+
+.Progressing {
+    color: blue;
+}
+
+.Failed {
+    color: #b1392e;
+    font-weight: bold;
+}
+
+.enabled .green {
+    color: #33a451;
+}
+
+.red {
+    color: #b1392e;
+}
+
+.operate .handle {
+    border: 1px solid #9e9b9b;
+    margin-right: 10px;
+    font-size: 12px;
+    line-height: 25px;
+    padding: 0 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.operate .handle:hover {
+    border-color: #1079F1;
+    color: #1079F1;
+}
+
+.operate .handle-pause {
+    display: inline-block;
+    width: 40px;
+}
+
+.operate .handle-open {
+    display: inline-block;
+    width: 40px;
+}
+
+.operate .handle-delete {
+    display: inline-block;
+}
+
+.entity .domain-name a {
+    color: #0090f4;
+    text-decoration: none;
+}
+
+.entity li {
+    float: left;
+}
+
+.mask-layer {
+    display: none;
+    background: rgb(132,118,118,0.6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.mask-layer .mask {
+    position: fixed;
+    z-index: 2020;
+    background: white;
+    top: 60px;
+    left: calc(50% - 215px);
+    width: 430px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.mask-layer .mask-head {
+    height: 40px;
+    padding-left: 10px;
+    background: rgb(232, 232, 232);
+    -webkit-border-radius: 5px 5px 0 0;
+    -moz-border-radius: 5px 5px 0 0;
+    border-radius: 5px 5px 0 0;
+}
+
+.mask-layer .mask-body {
+    padding: 0 40px;
+    margin-top: 20px;
+}
+
+.close {
+    background: url(/static/img/close.png) no-repeat 0 0;
+    display: block;
+    position: absolute;
+    text-decoration: none;
+    outline: none;
+    right: 14px;
+    width: 12px;
+    height: 13px;
+    top: 14px;
+}
+
+.mask-head-title {
+    color: #484444;
+    font-weight: bold;
+    line-height: 40px;
+}
+
+.mask-body input {
+    width: 350px;
+    height: 40px;
+    border-radius: 5px;
+    outline: none;
+    border: 1px solid rgb(205,204,204);
+    padding-left: 10px;
+    margin-bottom: 20px;
+}
+.mask-body p {
+    line-height: 22px;
+    color: #ada3a3;
+    font-size: 9px;
+    margin-top: 5px;
+}
+
+.mask-operate {
+    padding: 0 40px;
+    margin-bottom: 25px;
+}
+
+.mask-operate button.btn {
+    float: right;
+    color: #f9ebeb;
+    padding: 8px 18px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    outline: none;
+    border: none;
+    font-size: 12px;
+    margin-left: 14px;
+}
+.mask-operate .btn.confirm {
+    background-color: #0090f4;
+    border: 1px solid #108ee9;
+}
+.mask-operate .btn.confirm:hover {
+    background-color: #49a5e6;
+    border-color: #1c96ef;
+}
+
+.mask-operate .btn.cancel {
+    background-color: #FFF;
+    border: 1px solid #d9d9d9;
+    color: rgba(0, 0, 0, .65);
+}
+
+.mask-operate .btn.cancel:hover {
+    color: #108ee9;
+    border-color: #108ee9;
+}

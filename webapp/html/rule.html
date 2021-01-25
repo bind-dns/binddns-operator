@@ -1,0 +1,363 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BIND-DNS</title>
+    <link rel="stylesheet" type="text/css" href="/static/lib/fontawesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/global.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/rule.css" />
+</head>
+
+<body>
+<div id="wrapper">
+    <div class="records">
+        <div class="nav">
+            <div class="nav-head">
+                <h2>Records</h2>
+            </div>
+            <a href="javascript:void(0)" class="add-record">
+                <i class="fas fa-plus"></i> Add Record
+            </a>
+        </div>
+        <div class="head">
+            <ul>
+                <li class="head-item record-host">
+                    <span>Host</span>
+                </li>
+                <li class="head-item record-type">
+                    <span>Type</span>
+                </li>
+                <li class="head-item mx-priority">
+                    <span>MxPriority</span>
+                </li>
+                <li class="head-item ttl">
+                    <span>TTL</span>
+                </li>
+                <li class="head-item record-data">
+                    <span>Data</span>
+                </li>
+                <li class="head-item enabled">
+                    <span>Enabled</span>
+                </li>
+                <li class="head-item operate">
+                    <span>Operate</span>
+                </li>
+            </ul>
+        </div>
+        <div class="list-entity">
+        </div>
+    </div>
+</div>
+
+<div class="record-edit-template" style="display: none">
+    <div class="entity entity-edit" record="">
+        <ul>
+            <input type="hidden" class="hidden-record" />
+            <li class="head-item record-host">
+                <input type="text" />
+            </li>
+            <li class="head-item record-type">
+                <select>
+                    <option value="A">A</option>
+                    <option value="MX">MX</option>
+                    <option value="CNAME">CNAME</option>
+                    <option value="NS">NS</option>
+                    <option value="PTR">PTR</option>
+                    <option value="TXT">TXT</option>
+                    <option value="AAAA">AAAA</option>
+                    <option value="SRV">SRV</option>
+                    <option value="URL">URL</option>
+                </select>
+            </li>
+            <li class="head-item mx-priority">
+                <input type="text" value="-" disabled="disabled" />
+            </li>
+            <li class="head-item ttl">
+                <input type="text" value="" />
+            </li>
+            <li class="head-item record-data">
+                <input type="text" value="" />
+            </li>
+            <li>
+                <a class="handle handle-btn handle-cancel">
+                    <span class="tips">Cancel</span>
+                </a>
+                <a class="handle handle-btn handle-confirm">
+                    <span class="tips">Confirm</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="record-template" style="display: none">
+    <div class="entity" record="">
+        <ul>
+            <input type="hidden" class="hidden-record" />
+            <li class="head-item record-host edit">
+                <span>www</span>
+            </li>
+            <li class="head-item record-type edit">
+                <span>A</span>
+            </li>
+            <li class="head-item mx-priority edit">
+                <span>-</span>
+            </li>
+            <li class="head-item ttl edit">
+                <span>60</span>
+            </li>
+            <li class="head-item record-data edit">
+                <span>10.10.10.10</span>
+            </li>
+            <li class="head-item enabled">
+                <span></span>
+            </li>
+            <li class="head-item operate">
+                <span class="handle-pause-open">
+                    <a class="handle handle-open">
+                        <span class="tips">OPEN</span>
+                    </a>
+                </span>
+                <a class="handle handle-delete">
+                    <span class="tips">DELETE</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+</body>
+
+<script type="text/javascript" src="/static/lib/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/global.js"></script>
+<script>
+    let body = $("body")
+    let domain = getQueryVariable("domain")
+
+    body.on("click", ".add-record", function (){
+        $(".list-entity").prepend($(".record-edit-template").html())
+    })
+
+    body.on("change", ".record-type select", function (){
+        let dnsType = $(this).find("option:selected").val()
+        if (dnsType === "MX") {
+            $(this).parents(".entity").find(".mx-priority input").removeAttr("disabled")
+        } else {
+            $(this).parents(".entity").find(".mx-priority input").attr("disabled", "disabled")
+        }
+    })
+
+    body.on("click", ".handle-confirm", function (){
+        let entity = $(this).parents(".entity")
+
+        let name = $.trim(entity.find(".hidden-record").val())
+        let host = $.trim(entity.find(".record-host input").val())
+        let type = $.trim(entity.find(".record-type option:selected").val())
+        let mxPriority = $.trim(entity.find(".mx-priority input").val())
+        let ttl = $.trim(entity.find(".ttl input").val())
+        let data = $.trim(entity.find(".record-data input").val())
+
+        if (name === "") {
+            $.ajax({
+                url: "/api/rules",
+                method: "POST",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: JSON.stringify({
+                    "name": "nothing",
+                    "zone": domain,
+                    "host": host,
+                    "type": type,
+                    "data": data,
+                    "ttl": ttl,
+                    "mxPriority": mxPriority,
+                }),
+                success: function (data) {
+                    if (data.code === 0) {
+                        window.location.reload()
+                    } else {
+                        alert(data.msg)
+                    }
+                },
+                error: function (data) {
+                    console.log(data);
+                    alert("Server Interval Error")
+                }
+            })
+        } else {
+            $.ajax({
+                url: "/api/rules/" + name,
+                method: "PUT",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: JSON.stringify({
+                    "zone": domain,
+                    "host": host,
+                    "type": type,
+                    "data": data,
+                    "ttl": parseInt(ttl),
+                    "mxPriority": parseInt(mxPriority),
+                }),
+                success: function (data) {
+                    if (data.code === 0) {
+                        window.location.reload()
+                    } else {
+                        alert(data.msg)
+                    }
+                },
+                error: function (data) {
+                    console.log(data);
+                    alert("Server Interval Error")
+                }
+            })
+        }
+    })
+
+    body.on("click", ".list-entity .edit", function (){
+        let entity = $(this).parents(".entity")
+
+        let recordName = entity.find(".hidden-record").val()
+        let recordHost = entity.find(".record-host span").html()
+        let recordMxPriority = entity.find(".mx-priority span").html()
+        let recordType = entity.find(".record-type span").html()
+        let recordTtl = entity.find(".ttl span").html()
+        let recordData = entity.find(".record-data span").html()
+
+        let template = $(".record-edit-template")
+        template.find(".entity").attr("record", recordName)
+        entity.after(template.html())
+
+        let editRecord = $(`div[record='${recordName}'].entity-edit`)
+        editRecord.find(".hidden-record").val(recordName)
+        editRecord.find(".record-host input").val(recordHost)
+        editRecord.find(".record-type select").val(recordType)
+        editRecord.find(".mx-priority input").val(recordMxPriority)
+        editRecord.find(".ttl input").val(recordTtl)
+        editRecord.find(".record-data input").val(recordData)
+        if (recordType === "MX") {
+            editRecord.find(".mx-priority input").removeAttr("disabled")
+        }
+
+        entity.hide()
+    })
+
+    body.on("click", ".list-entity .entity-edit .handle-cancel", function (){
+        let entity = $(this).parents(".entity")
+
+        let recordName = entity.find(".hidden-record").val()
+
+        entity.remove()
+        $(`div[record='${recordName}'].entity`).show()
+    })
+
+    body.on("click", ".handle-delete", function (){
+        let entity = $(this).parents(".entity")
+        let recordName = entity.find(".hidden-record").val()
+        $.ajax({
+            url: "/api/rules/" + recordName,
+            method: "DELETE",
+            success: function (data) {
+                if (data.code === 0) {
+                    entity.remove()
+                } else {
+                    alert(data.msg)
+                }
+            },
+            error: function (data) {
+                console.log(data);
+                alert("Server Interval Error")
+            }
+        })
+    })
+
+    body.on("click", ".handle-pause", function (){
+        let entity = $(this).parents(".entity")
+        let recordName = entity.find(".hidden-record").val()
+        $.ajax({
+            url: "/api/rules/" + recordName + "/pause",
+            method: "PUT",
+            success: function (data) {
+                if (data.code === 0) {
+                    entity.find(".enabled").html(`<span class="red">PAUSED</span>`)
+                    entity.find(".handle-pause-open").html(`
+                        <a class="handle handle-open">
+                            <span class="tips">OPEN</span>
+                        </a>
+                    `)
+                } else {
+                    alert(data.msg)
+                }
+            },
+            error: function (data) {
+                console.log(data);
+                alert("Server Interval Error")
+            }
+        })
+    })
+
+    body.on("click", ".handle-open", function (){
+        let entity = $(this).parents(".entity")
+        let recordName = entity.find(".hidden-record").val()
+        $.ajax({
+            url: "/api/rules/" + recordName + "/open",
+            method: "PUT",
+            success: function (data) {
+                if (data.code === 0) {
+                    entity.find(".enabled").html(`<i class="fas fa-check-circle green"></i>`)
+                    entity.find(".handle-pause-open").html(`
+                        <a class="handle handle-pause">
+                            <span class="tips">PAUSE</span>
+                        </a>
+                    `)
+                } else {
+                    alert(data.msg)
+                }
+            },
+            error: function (data) {
+                console.log(data);
+                alert("Server Interval Error")
+            }
+        })
+    })
+
+    function listRecords() {
+        $.ajax({
+            url: "/api/rules?domain="+domain,
+            method: "GET",
+            success: function (data) {
+                $.each(data.data, function (i, e) {
+                    let template = $(".record-template")
+                    template.find(".entity").attr("record", e.Name)
+                    template.find(".hidden-record").val(e.Name)
+                    template.find(".record-host span").html(e.Host)
+                    template.find(".record-type span").html(e.Type)
+                    template.find(".mx-priority span").html(e.MxPriority)
+                    template.find(".ttl span").html(e.Ttl)
+                    template.find(".record-data span").html(e.Data)
+                    if (e.Enabled) {
+                        template.find(".enabled span").html(`<i class="fas fa-check-circle green"></i>`)
+                        template.find(".operate .handle-pause-open").html(`
+                            <a class="handle handle-pause">
+                                <span class="tips">PAUSE</span>
+                            </a>
+                        `)
+                    } else {
+                        template.find(".enabled").html(`<span class="red">PAUSED</span>`)
+                        template.find(".operate .handle-pause-open").html(`
+                            <a class="handle handle-open">
+                                <span class="tips">OPEN</span>
+                            </a>
+                        `)
+                    }
+                    $(".list-entity").append(template.html())
+                })
+            },
+            error: function (data) {
+                console.log(data);
+                alert("Server Interval Error")
+            }
+        })
+    }
+
+    listRecords()
+</script>
+</html>

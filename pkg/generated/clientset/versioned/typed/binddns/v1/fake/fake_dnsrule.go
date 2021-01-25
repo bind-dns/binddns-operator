@@ -33,7 +33,6 @@ import (
 // FakeDnsRules implements DnsRuleInterface
 type FakeDnsRules struct {
 	Fake *FakeBinddnsV1
-	ns   string
 }
 
 var dnsrulesResource = schema.GroupVersionResource{Group: "binddns.github.com", Version: "v1", Resource: "dnsrules"}
@@ -43,8 +42,7 @@ var dnsrulesKind = schema.GroupVersionKind{Group: "binddns.github.com", Version:
 // Get takes name of the dnsRule, and returns the corresponding dnsRule object, and an error if there is any.
 func (c *FakeDnsRules) Get(ctx context.Context, name string, options v1.GetOptions) (result *binddnsv1.DnsRule, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(dnsrulesResource, c.ns, name), &binddnsv1.DnsRule{})
-
+		Invokes(testing.NewRootGetAction(dnsrulesResource, name), &binddnsv1.DnsRule{})
 	if obj == nil {
 		return nil, err
 	}
@@ -54,8 +52,7 @@ func (c *FakeDnsRules) Get(ctx context.Context, name string, options v1.GetOptio
 // List takes label and field selectors, and returns the list of DnsRules that match those selectors.
 func (c *FakeDnsRules) List(ctx context.Context, opts v1.ListOptions) (result *binddnsv1.DnsRuleList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(dnsrulesResource, dnsrulesKind, c.ns, opts), &binddnsv1.DnsRuleList{})
-
+		Invokes(testing.NewRootListAction(dnsrulesResource, dnsrulesKind, opts), &binddnsv1.DnsRuleList{})
 	if obj == nil {
 		return nil, err
 	}
@@ -76,15 +73,13 @@ func (c *FakeDnsRules) List(ctx context.Context, opts v1.ListOptions) (result *b
 // Watch returns a watch.Interface that watches the requested dnsRules.
 func (c *FakeDnsRules) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(dnsrulesResource, c.ns, opts))
-
+		InvokesWatch(testing.NewRootWatchAction(dnsrulesResource, opts))
 }
 
 // Create takes the representation of a dnsRule and creates it.  Returns the server's representation of the dnsRule, and an error, if there is any.
 func (c *FakeDnsRules) Create(ctx context.Context, dnsRule *binddnsv1.DnsRule, opts v1.CreateOptions) (result *binddnsv1.DnsRule, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(dnsrulesResource, c.ns, dnsRule), &binddnsv1.DnsRule{})
-
+		Invokes(testing.NewRootCreateAction(dnsrulesResource, dnsRule), &binddnsv1.DnsRule{})
 	if obj == nil {
 		return nil, err
 	}
@@ -94,8 +89,7 @@ func (c *FakeDnsRules) Create(ctx context.Context, dnsRule *binddnsv1.DnsRule, o
 // Update takes the representation of a dnsRule and updates it. Returns the server's representation of the dnsRule, and an error, if there is any.
 func (c *FakeDnsRules) Update(ctx context.Context, dnsRule *binddnsv1.DnsRule, opts v1.UpdateOptions) (result *binddnsv1.DnsRule, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(dnsrulesResource, c.ns, dnsRule), &binddnsv1.DnsRule{})
-
+		Invokes(testing.NewRootUpdateAction(dnsrulesResource, dnsRule), &binddnsv1.DnsRule{})
 	if obj == nil {
 		return nil, err
 	}
@@ -106,8 +100,7 @@ func (c *FakeDnsRules) Update(ctx context.Context, dnsRule *binddnsv1.DnsRule, o
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
 func (c *FakeDnsRules) UpdateStatus(ctx context.Context, dnsRule *binddnsv1.DnsRule, opts v1.UpdateOptions) (*binddnsv1.DnsRule, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(dnsrulesResource, "status", c.ns, dnsRule), &binddnsv1.DnsRule{})
-
+		Invokes(testing.NewRootUpdateSubresourceAction(dnsrulesResource, "status", dnsRule), &binddnsv1.DnsRule{})
 	if obj == nil {
 		return nil, err
 	}
@@ -117,14 +110,13 @@ func (c *FakeDnsRules) UpdateStatus(ctx context.Context, dnsRule *binddnsv1.DnsR
 // Delete takes name of the dnsRule and deletes it. Returns an error if one occurs.
 func (c *FakeDnsRules) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(dnsrulesResource, c.ns, name), &binddnsv1.DnsRule{})
-
+		Invokes(testing.NewRootDeleteAction(dnsrulesResource, name), &binddnsv1.DnsRule{})
 	return err
 }
 
 // DeleteCollection deletes a collection of objects.
 func (c *FakeDnsRules) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(dnsrulesResource, c.ns, listOpts)
+	action := testing.NewRootDeleteCollectionAction(dnsrulesResource, listOpts)
 
 	_, err := c.Fake.Invokes(action, &binddnsv1.DnsRuleList{})
 	return err
@@ -133,8 +125,7 @@ func (c *FakeDnsRules) DeleteCollection(ctx context.Context, opts v1.DeleteOptio
 // Patch applies the patch and returns the patched dnsRule.
 func (c *FakeDnsRules) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *binddnsv1.DnsRule, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(dnsrulesResource, c.ns, name, pt, data, subresources...), &binddnsv1.DnsRule{})
-
+		Invokes(testing.NewRootPatchSubresourceAction(dnsrulesResource, name, pt, data, subresources...), &binddnsv1.DnsRule{})
 	if obj == nil {
 		return nil, err
 	}

@@ -42,33 +42,32 @@ type DnsDomainInformer interface {
 type dnsDomainInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
-	namespace        string
 }
 
 // NewDnsDomainInformer constructs a new informer for DnsDomain type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewDnsDomainInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredDnsDomainInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewDnsDomainInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredDnsDomainInformer(client, resyncPeriod, indexers, nil)
 }
 
 // NewFilteredDnsDomainInformer constructs a new informer for DnsDomain type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredDnsDomainInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredDnsDomainInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.BinddnsV1().DnsDomains(namespace).List(context.TODO(), options)
+				return client.BinddnsV1().DnsDomains().List(context.TODO(), options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.BinddnsV1().DnsDomains(namespace).Watch(context.TODO(), options)
+				return client.BinddnsV1().DnsDomains().Watch(context.TODO(), options)
 			},
 		},
 		&binddnsv1.DnsDomain{},
@@ -78,7 +77,7 @@ func NewFilteredDnsDomainInformer(client versioned.Interface, namespace string, 
 }
 
 func (f *dnsDomainInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredDnsDomainInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+	return NewFilteredDnsDomainInformer(client, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
 func (f *dnsDomainInformer) Informer() cache.SharedIndexInformer {

@@ -31,8 +31,9 @@ type DnsRuleLister interface {
 	// List lists all DnsRules in the indexer.
 	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1.DnsRule, err error)
-	// DnsRules returns an object that can list and get DnsRules.
-	DnsRules(namespace string) DnsRuleNamespaceLister
+	// Get retrieves the DnsRule from the index for a given name.
+	// Objects returned here must be treated as read-only.
+	Get(name string) (*v1.DnsRule, error)
 	DnsRuleListerExpansion
 }
 
@@ -54,41 +55,9 @@ func (s *dnsRuleLister) List(selector labels.Selector) (ret []*v1.DnsRule, err e
 	return ret, err
 }
 
-// DnsRules returns an object that can list and get DnsRules.
-func (s *dnsRuleLister) DnsRules(namespace string) DnsRuleNamespaceLister {
-	return dnsRuleNamespaceLister{indexer: s.indexer, namespace: namespace}
-}
-
-// DnsRuleNamespaceLister helps list and get DnsRules.
-// All objects returned here must be treated as read-only.
-type DnsRuleNamespaceLister interface {
-	// List lists all DnsRules in the indexer for a given namespace.
-	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1.DnsRule, err error)
-	// Get retrieves the DnsRule from the indexer for a given namespace and name.
-	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1.DnsRule, error)
-	DnsRuleNamespaceListerExpansion
-}
-
-// dnsRuleNamespaceLister implements the DnsRuleNamespaceLister
-// interface.
-type dnsRuleNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all DnsRules in the indexer for a given namespace.
-func (s dnsRuleNamespaceLister) List(selector labels.Selector) (ret []*v1.DnsRule, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1.DnsRule))
-	})
-	return ret, err
-}
-
-// Get retrieves the DnsRule from the indexer for a given namespace and name.
-func (s dnsRuleNamespaceLister) Get(name string) (*v1.DnsRule, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
+// Get retrieves the DnsRule from the index for a given name.
+func (s *dnsRuleLister) Get(name string) (*v1.DnsRule, error) {
+	obj, exists, err := s.indexer.GetByKey(name)
 	if err != nil {
 		return nil, err
 	}

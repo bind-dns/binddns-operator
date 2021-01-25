@@ -43,10 +43,10 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 
 // DnsDomains returns a DnsDomainInformer.
 func (v *version) DnsDomains() DnsDomainInformer {
-	return &dnsDomainInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+	return &dnsDomainInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // DnsRules returns a DnsRuleInformer.
 func (v *version) DnsRules() DnsRuleInformer {
-	return &dnsRuleInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+	return &dnsRuleInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }

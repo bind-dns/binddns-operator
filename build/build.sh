@@ -20,5 +20,11 @@ LDFLAGS="-s -w -X '${PACKAGE}/version.APPNAME=${APPNAME}' -X '${PACKAGE}/version
 # go build
 CGO_ENABLED=0 go build -mod vendor -v -x -ldflags "${LDFLAGS}" -o ${ROOT}/build/${APPNAME}/bin/${ARCH}/${APPNAME} ${ROOT}/cmd/${BUILDDIR}/main.go
 
+# copy webapp
+cp -r ${ROOT}/webapp ${ROOT}/build/${APPNAME}
+
 # docker build
 docker build -t ${APPNAME}:latest ${ROOT}/build/${APPNAME}
+
+# delete webapp
+rm -rf ${ROOT}/build/${APPNAME}/webapp
