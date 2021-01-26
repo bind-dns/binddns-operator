@@ -3,7 +3,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: binddns-controller
-  namespace: default
+  namespace: kube-system
 spec:
   replicas: 1
   selector:

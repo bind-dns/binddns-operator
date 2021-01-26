@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: rndc-conf
-  namespace: default
+  namespace: kube-system
 data:
   rndc.conf: |
     # Start of rndc.conf
@@ -24,7 +24,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: bind-conf
-  namespace: default
+  namespace: kube-system
 data:
   named.conf: |
     options {

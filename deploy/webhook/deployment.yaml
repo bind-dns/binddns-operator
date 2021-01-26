@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: binddns-webhook
-  namespace: default
+  namespace: kube-system
   labels:
     app: binddns-webhook
 spec:

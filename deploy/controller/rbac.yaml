@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: binddns-sa
-  namespace: default
+  namespace: kube-system
 
 ---
 kind: ClusterRole
@@ -23,7 +23,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: binddns-sa
-    namespace: default
+    namespace: kube-system
 roleRef:
   kind: ClusterRole
   name: binddns-role

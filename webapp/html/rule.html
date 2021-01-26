@@ -168,8 +168,8 @@
                     "host": host,
                     "type": type,
                     "data": data,
-                    "ttl": ttl,
-                    "mxPriority": mxPriority,
+                    "ttl": parseInt(ttl),
+                    "mxPriority": parseInt(mxPriority),
                 }),
                 success: function (data) {
                     if (data.code === 0) {

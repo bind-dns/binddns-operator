@@ -8,13 +8,37 @@ metadata:
   creationTimestamp: null
   name: dnsrules.binddns.github.com
 spec:
+  additionalPrinterColumns:
+    - JSONPath: .spec.zone
+      name: Zone
+      type: string
+    - JSONPath: .spec.enabled
+      name: Enabled
+      type: boolean
+    - JSONPath: .spec.host
+      name: Host
+      type: string
+    - JSONPath: .spec.type
+      name: Type
+      type: string
+    - JSONPath: .spec.data
+      name: Data
+      type: string
+    - JSONPath: .spec.ttl
+      name: Ttl
+      type: number
+    - JSONPath: .spec.mxPriority
+      name: MxPriority
+      type: number
   group: binddns.github.com
   names:
     kind: DnsRule
     listKind: DnsRuleList
     plural: dnsrules
     singular: dnsrule
-  scope: Namespaced
+  scope: Cluster
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       properties:
@@ -32,17 +56,15 @@ spec:
           description: Standard object metadata.
           type: object
         spec:
-          description: Specification of the desired behavior of the DnsInstance.
+          description: Specification of the desired behavior of the DnsRule.
           properties:
             data:
-              type: string
-            domainName:
               type: string
             enabled:
               type: boolean
             host:
               type: string
-            maxPriority:
+            mxPriority:
               format: int32
               type: integer
             ttl:
@@ -53,20 +75,23 @@ spec:
             zone:
               type: string
           required:
+            - data
             - enabled
-            - maxPriority
+            - host
+            - ttl
+            - type
+            - zone
           type: object
         status:
-          description: Most recently observed status of the DnsInstance.
+          description: Most recently observed status of the DnsRule.
           properties:
-            status:
+            createTime:
               type: string
-          required:
-            - status
+            updateTime:
+              type: string
           type: object
       required:
         - spec
-        - status
       type: object
   version: v1
   versions:

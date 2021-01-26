@@ -8,13 +8,28 @@ metadata:
   creationTimestamp: null
   name: dnsdomains.binddns.github.com
 spec:
+  additionalPrinterColumns:
+    - JSONPath: .spec.enabled
+      name: enabled
+      type: boolean
+    - JSONPath: .spec.remark
+      name: remark
+      type: string
+    - JSONPath: .status.updateTime
+      name: update
+      type: string
+    - JSONPath: .status.phase
+      name: status
+      type: string
   group: binddns.github.com
   names:
     kind: DnsDomain
     listKind: DnsDomainList
     plural: dnsdomains
     singular: dnsdomain
-  scope: Namespaced
+  scope: Cluster
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       properties:
@@ -32,51 +47,44 @@ spec:
           description: Standard object metadata.
           type: object
         spec:
-          description: Specification of the desired behavior of the DnsInstance.
+          description: Specification of the desired behavior of the DnsDomain.
           properties:
             enabled:
-              description: Enabled defines whether enable the domain. Default true,
-                not required
+              description: Enabled defines whether enable the domain.
               type: boolean
-            name:
-              description: Name defines the domain name.
-              type: string
             remark:
               description: Remark defines the remark for the domain, base64 format.
               type: string
           required:
             - enabled
-            - remark
           type: object
         status:
-          description: Most recently observed status of the DnsInstance.
+          description: Most recently observed status of the DnsDomain.
           properties:
-            condition:
+            createTime:
+              description: CreateTime defines the domain create time.
+              type: string
+            instanceStatuses:
               additionalProperties:
                 properties:
-                  instanceName:
+                  name:
                     type: string
                   status:
                     type: string
-                required:
-                  - instanceName
-                  - status
+                  updatedAt:
+                    type: string
                 type: object
-              description: Codition defines the
+              description: InstanceStatuses defines the domain status of every instance
               type: object
-            createTime:
-              description: CreateTime defines the domain create time.
+            phase:
               type: string
             updateTime:
               description: UpdateTime defines the domain update time.
               type: string
-          required:
-            - condition
-            - createTime
-            - updateTime
           type: object
       required:
-        - status
+        - metadata
+        - spec
       type: object
   version: v1
   versions:

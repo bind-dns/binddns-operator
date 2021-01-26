@@ -121,6 +121,7 @@ func createRule(ctx *gin.Context) {
 		})
 		return
 	}
+	ctx.JSON(http.StatusOK, &Response{Code: SUCCESS})
 }
 
 func deleteRule(ctx *gin.Context) {
