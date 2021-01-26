@@ -18,7 +18,7 @@ spec:
       serviceAccount: binddns-sa
       containers:
         - name: binddns-webhook
-          image: binddns-webhook:latest
+          image: pelin/binddns-webhook:v0.1.0
           imagePullPolicy: IfNotPresent
           command: ["/app/binddns-webhook"]
           args:

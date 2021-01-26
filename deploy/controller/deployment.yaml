@@ -32,7 +32,7 @@ spec:
           emptyDir: {}
       initContainers:
         - name: init-config
-          image: binddns-controller:latest
+          image: pelin/binddns-controller:v0.1.0
           imagePullPolicy: IfNotPresent
           command: ["/app/binddns-controller"]
           args: ["init-config"]
@@ -45,7 +45,7 @@ spec:
               mountPath: /etc/named/view
       containers:
         - name: binddns-controller
-          image: binddns-controller:latest
+          image: pelin/binddns-controller:v0.1.0
           imagePullPolicy: IfNotPresent
           command: ["/app/binddns-controller"]
           args: ["--api"]
